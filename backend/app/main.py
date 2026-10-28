@@ -1,6 +1,9 @@
+from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
@@ -9,8 +12,11 @@ from . import __version__
 from .collaboration import CollaborationOrchestrator
 from .config import Settings, get_settings
 from .knowledge import KnowledgeBase, KnowledgeLoadError
+from .optimization import join_optimizations
+from .optimization import router as optimization_router
 from .personal import router as personal_router
 from .provider import ProviderError, generate_answer
+from .public_trace_market import public_route, verify_public_storage
 from .request_id import RequestIDMiddleware
 from .request_limits import RequestBodyLimitMiddleware
 from .schemas import (
@@ -22,8 +28,20 @@ from .schemas import (
     ProfileResponse,
     Source,
 )
+from .trace_market import router as trace_market_router
+
+
+@asynccontextmanager
+async def lifespan(app):
+    if settings.trace_market_public:
+        await run_in_threadpool(verify_public_storage, settings)
+    yield
+    if not settings.trace_market_public:
+        await join_optimizations()
+
 
 app = FastAPI(
+    lifespan=lifespan,
     title="Agent-Me API",
     description=(
         "Agent-Me — an open-source, auditable AI Twin built with personal knowledge, "
@@ -33,7 +51,9 @@ app = FastAPI(
 )
 
 
+app.include_router(trace_market_router)
 app.include_router(personal_router)
+app.include_router(optimization_router)
 settings = get_settings()
 app.add_middleware(RequestBodyLimitMiddleware, settings=settings)
 app.add_middleware(
@@ -48,6 +68,17 @@ app.add_middleware(RequestIDMiddleware)
 
 
 @app.middleware("http")
+async def public_intake_boundary(request: Request, call_next):
+    if settings.trace_market_public and not public_route(request.url.path):
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "Not found."},
+            headers={"Cache-Control": "no-store"},
+        )
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def private_no_cache(request: Request, call_next):
     """Prevent storage of responses that can contain personal knowledge."""
     response = await call_next(request)
@@ -55,7 +86,14 @@ async def private_no_cache(request: Request, call_next):
         "/api/v1/chat",
         "/api/v1/collaborate",
     }
-    if is_qa_response or request.url.path.startswith("/api/v1/personal"):
+    if is_qa_response or request.url.path.startswith(
+        (
+            "/api/v1/personal",
+            "/api/v1/trace-market",
+            "/api/v1/trace-submissions",
+            "/api/v1/buyer/trace-submissions",
+        )
+    ):
         response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -145,6 +183,20 @@ async def health() -> dict[str, str]:
 async def ready(
     config: Settings = Depends(get_settings),
 ) -> JSONResponse:
+    if config.trace_market_public:
+        try:
+            await run_in_threadpool(verify_public_storage, config)
+            is_ready = True
+        except RuntimeError:
+            is_ready = False
+        return JSONResponse(
+            status_code=200 if is_ready else 503,
+            content={
+                "status": "ready" if is_ready else "not_ready",
+                "service": "trace-submissions",
+            },
+            headers={"Cache-Control": "no-store"},
+        )
     knowledge = _configured_knowledge_base(config)
     documents = await run_in_threadpool(knowledge.documents)
     is_ready = bool(documents) and config.provider_state != "misconfigured"
@@ -243,3 +295,14 @@ async def collaborate(
             for stage in result.trace
         ],
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def safe_market_validation(request: Request, error: RequestValidationError):
+    if request.url.path.startswith(
+        ("/api/v1/trace-submissions", "/api/v1/buyer/trace-submissions")
+    ):
+        return JSONResponse(
+            status_code=422, content={"detail": "Invalid submission request fields."}
+        )
+    return await request_validation_exception_handler(request, error)

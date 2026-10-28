@@ -1,0 +1,9 @@
+{
+  "schema": "agent-me.trace-rate-card.v1",
+  "version": "2026-10-25-draft-1",
+  "status": "experimental",
+  "currency": "USD",
+  "planning_contributor_share_bps": 7000,
+  "paired_conversation_minor": { "min": 5, "max": 25 },
+  "tool_evidence_conversation_minor": { "min": 25, "max": 200 }
+}

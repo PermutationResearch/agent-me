@@ -100,7 +100,8 @@ This is an opt-in, single-owner local workspace. Install the dependencies using 
 Unlock the new panel using `PERSONAL_TOKEN` from `private/personal.env`.
 The initializer is idempotent: it preserves existing workspace data and `.env`, while recreating any missing non-secret scaffolding.
 
-Add profile fields as typed entries (`fact`, `preference`, `event`, `decision`). All new or edited
+Add profile fields as typed entries (`fact`, `preference`, `event`, `decision`, `project`, `skill`,
+`working_pattern`). All new or edited
 entries are pending until confirmed. Use `Remember: ...` in private chat to propose a preference,
 then review it in the memory list. The default extracted key is `conversation.preference`; edit it
 to a specific key before confirmation when needed. Matching kind/key conflicts require explicit
@@ -111,6 +112,21 @@ retrieval. At most 20 memory entries are selected, and provider context is bound
 `MAX_CONTEXT_CHARS`. Optional private Markdown belongs in `private/knowledge/`, never the tracked `knowledge/`.
 Private Markdown is operator-maintained knowledge and bypasses candidate confirmation.
 The public chat and collaboration endpoints never read this workspace.
+
+An `hsm.ai_corpus_semantic_index.v1` index can be attached with
+`PERSONAL_CORPUS_INDEX` and `PERSONAL_CORPUS_SHA256`. Agent-Me requires a mode-0600,
+owner-only index and opens it through SQLite immutable/read-only mode. The Semantic corpus panel
+searches bounded owner-authored excerpts labeled as untrusted historical evidence. By default, search results
+do not enter private-chat grounding and never create or confirm a memory automatically.
+
+For a combined work archive, set `PERSONAL_CORPUS_INCLUDE_WORK=true` to accept an
+`all_events` index and retrieve author-labelled assistant, tool, and saved-document evidence.
+Set `PERSONAL_CORPUS_CHAT_ENABLED=true` to cite matching historical excerpts in private
+chat. These are untrusted work sources, not confirmed personal facts. Public endpoints
+stay separate. When a model provider is configured, retrieved archive excerpts are sent
+to that provider along with the private question. Leave both settings false for the
+original owner-only, search-only behavior. Keep the mounted encrypted vault available
+while using an index stored there; an unavailable or mismatched index fails verification.
 
 The database persists chat for display (latest 100 turns); it does not replay history to the model,
 so deleted memory cannot leak back through old turns. This first version does not provide full
@@ -141,7 +157,17 @@ The token must contain at least 32 characters. Disabled mode returns 404, failed
 | POST | `/entries/{id}/edit` | Replace fields and return to pending |
 | POST | `/entries/{id}/confirm` | Confirm with `{replace_ids: []}`; 409 reports conflicts |
 | POST | `/entries/{id}/delete` | Delete memory |
+| GET | `/corpus/status` | Verify the configured immutable owner-only corpus and return aggregate status |
+| POST | `/corpus/search` | Search bounded review-only owner evidence with `{query, limit?}` |
 | GET | `/history` | Latest 100 persisted turns |
 | POST | `/history/clear` | Delete all turns, retain entries |
 | GET | `/export` | Export all entries and turns |
 | POST | `/chat` | Private grounded answer for `{question}` and persist exchange |
+
+## Prompt and skill improvement
+
+The private workspace includes an opt-in GEPA run flow over a verified all-events
+work archive. It uses a local Ollama model, keeps held-out test cases outside
+search/reflection, and saves candidate proposals without changing original skills
+or memories. See [GEPA optimization](OPTIMIZATION.md) for setup, budgets, scoring
+limitations, and private receipt storage.

@@ -12,9 +12,27 @@ class Settings(BaseSettings):
         "An open-source, auditable AI Twin built with personal knowledge, retrieval, "
         "multi-agent reasoning, verification, and inspectable execution traces."
     )
+    trace_market_public: bool = False
+    trace_submissions_enabled: bool = False
+    trace_submission_data_dir: str = "private/trace-market"
+    trace_buyer_token: str = ""
+    trace_submission_max_bytes: int = Field(default=25 * 1024 * 1024, ge=1024, le=25 * 1024 * 1024)
+    max_trace_submission_body_bytes: int = Field(
+        default=26 * 1024 * 1024, ge=1024, le=26 * 1024 * 1024
+    )
+    trace_submission_storage_limit_bytes: int = Field(default=512 * 1024 * 1024, ge=1)
     personal_enabled: bool = False
     personal_data_dir: str = "private"
     personal_token: str = ""
+    personal_corpus_include_work: bool = False
+    personal_corpus_chat_enabled: bool = False
+    personal_corpus_index: str = ""
+    personal_corpus_sha256: str = ""
+    personal_corpus_result_limit: int = Field(default=10, ge=1, le=25)
+    personal_corpus_excerpt_chars: int = Field(default=640, ge=160, le=2000)
+    personal_optimization_dir: str = ""
+    optimization_ollama_url: str = "http://127.0.0.1:11434"
+    optimization_model: str = "qwen2.5:7b"
     knowledge_dir: str = "knowledge"
     max_question_chars: int = Field(default=8_000, ge=1, le=100_000)
     max_context_chars: int = Field(default=12_000, ge=1, le=100_000)

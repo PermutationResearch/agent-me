@@ -1,0 +1,32 @@
+.market-shell .mcp-page{--mcp-ink:#182329;max-width:1180px;margin:auto;padding:74px 40px 0;color:var(--mcp-ink)}
+.market-shell .mcp-intro{max-width:850px;padding-bottom:76px}
+.market-shell .mcp-intro h1{font-size:clamp(46px,6.5vw,84px);line-height:1.04;letter-spacing:-.055em;margin:20px 0 24px}
+.market-shell .mcp-page em{font-family:"Agent Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:-.025em}
+.market-shell .mcp-intro>p:not(.market-kicker){font-size:21px;line-height:1.55;max-width:620px;margin-bottom:28px}
+.mcp-local-label{display:block;margin-top:18px;font-size:13px;color:#505a60;line-height:1.6}
+.market-shell .mcp-prompt{display:grid;grid-template-columns:1fr 1fr;gap:70px;border-top:1px solid #ccd0c8;padding:60px 0}
+.market-shell .mcp-page h2{font-size:clamp(32px,4vw,49px);line-height:1.1;letter-spacing:-.04em;font-weight:500;margin:18px 0 24px}
+.mcp-prompt p,.mcp-section-heading>p:last-child{max-width:490px;font-size:16px;line-height:1.65;color:#46525a}
+.mcp-prompt ol{list-style:none;margin:0;padding:0}
+.mcp-prompt li{display:flex;gap:22px;padding:18px 0;border-bottom:1px solid #d9dcd5}
+.mcp-prompt li>span{font-size:12px;color:#59665c;padding-top:5px;font-variant-numeric:tabular-nums}
+.market-shell .mcp-prompt h3{font-size:20px;margin:0 0 8px;font-weight:600}
+.mcp-prompt li p{margin:0;font-size:15px}
+.market-shell .mcp-setup{padding:60px 0;border-top:1px solid #ccd0c8;scroll-margin-top:100px}
+.mcp-section-heading{max-width:650px;margin-bottom:36px}
+.mcp-install{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.mcp-install article{min-width:0}
+.market-shell .mcp-page pre{background:#182329;color:#f6f8f2;border-radius:14px;padding:25px;margin:16px 0;font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre;max-width:100%;tab-size:2}
+.mcp-page code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.mcp-install article>p{font-size:14px;line-height:1.65;color:#46525a;margin:0}
+.mcp-codex{grid-column:2}
+.market-shell .mcp-boundaries{display:grid;grid-template-columns:.85fr 1.15fr;gap:70px;border-top:1px solid #ccd0c8;padding:60px 0}
+.mcp-boundaries p{font-size:15px;line-height:1.75;margin:0 0 22px;color:#46525a}
+.mcp-boundaries strong{color:#182329}
+.market-shell .mcp-final{padding:45px 0 70px;text-align:center;border-top:1px solid #ccd0c8}
+.mcp-final>p{color:#46525a;line-height:1.6;margin-bottom:25px}
+.mcp-final>a:last-child{display:block;margin-top:20px;color:#28342e;font-size:14px}
+@media(max-width:720px){.market-shell .mcp-page{padding:45px 20px 0}.market-shell .mcp-intro{padding-bottom:42px}.market-shell .mcp-intro>p:not(.market-kicker){font-size:18px}.market-shell .mcp-prompt,.market-shell .mcp-boundaries{grid-template-columns:1fr;gap:20px;padding:36px 0}.mcp-install{grid-template-columns:1fr;gap:28px}.mcp-codex{grid-column:auto}.market-shell .mcp-setup{padding:36px 0}.market-shell .mcp-page pre{padding:20px;font-size:12px}.market-shell .mcp-final{padding:30px 0 45px}}
+
+.market-shell .mcp-page pre code{color:inherit;background:transparent;font-size:inherit;line-height:inherit;font-weight:400;padding:0;border:0}
+.market-shell .mcp-page p code{color:inherit;font-size:.95em}

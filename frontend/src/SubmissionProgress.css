@@ -1,0 +1,33 @@
+.submission-progress {
+  padding: 28px 0 30px;
+  border-block: 1px solid #e7e9e7;
+}
+.submission-progress-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.submission-progress-heading h3 { margin: 0; color: #171c19; font-size: 15px; font-weight: 600; letter-spacing: -.02em; }
+.submission-progress-heading > span { color: #6e7771; font-size: 12px; }
+.submission-progress .tz-root { user-select: text; -webkit-user-select: text; }
+.submission-progress .tz-root[data-orientation="horizontal"] .tz-list { overflow: visible; padding: 0; gap: 0; }
+.submission-progress .tz-root[data-orientation="horizontal"] .tz-item { min-width: 0; width: auto; flex: 1 1 0; padding-right: 24px; gap: 13px; }
+.submission-progress .tz-root[data-orientation="horizontal"] .tz-item:last-child { padding-right: 0; }
+.submission-progress .tz-root[data-orientation="horizontal"] .tz-connector { right: 0; opacity: .45; }
+.submission-progress .tz-content { gap: 6px; }
+.submission-progress .tz-title { font-size: 14px; line-height: 1.45; letter-spacing: -.015em; }
+.submission-progress .tz-desc { max-width: 30ch; font-size: 12px; line-height: 1.65; color: #657168; }
+.submission-progress .tz-time { margin-top: 4px; font-size: 11px; color: #747d77; }
+.submission-progress .tz-item[aria-current="step"] .tz-title { color: #087f5b; }
+@media (max-width: 680px) {
+  .submission-progress { padding-block: 23px; }
+  .submission-progress-heading { margin-bottom: 22px; }
+  .submission-progress-heading > span { display: none; }
+  .submission-progress .tz-root[data-orientation="horizontal"] .tz-list { flex-direction: column; }
+  .submission-progress .tz-root[data-orientation="horizontal"] .tz-item { flex-direction: row; width: 100%; padding: 0 0 22px; gap: 14px; }
+  .submission-progress .tz-root[data-orientation="horizontal"] .tz-item:last-child { padding-bottom: 0; }
+  .submission-progress .tz-root[data-orientation="horizontal"] .tz-connector { left: calc(var(--tz-node) / 2 - 1px); top: var(--tz-node); bottom: 0; right: auto; width: 2px; height: auto; transform-origin: top center; animation-name: tz-draw; }
+  .submission-progress .tz-desc { max-width: 46ch; }
+}

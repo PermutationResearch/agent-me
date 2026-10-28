@@ -19,3 +19,8 @@ private/
 *.sqlite*
 *.db-*
 private-twin-export.json
+
+# Local Cloudflare state and private runtime credentials.
+.wrangler/
+.dev.vars*
+.deployment/

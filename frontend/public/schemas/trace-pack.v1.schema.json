@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:agent-me:trace-pack:v1",
+  "title": "Agent-Me trace pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "created_at",
+    "intent",
+    "offer",
+    "selection",
+    "privacy",
+    "files",
+    "events",
+    "integrity"
+  ],
+  "properties": {
+    "schema": {
+      "const": "agent-me.trace-pack.v1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "intent": {
+      "enum": [
+        "personal_export",
+        "sale_offer"
+      ]
+    },
+    "offer": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "recipient",
+            "status",
+            "submitted",
+            "requested_uses",
+            "note"
+          ],
+          "properties": {
+            "recipient": {
+              "const": "Agent-Me"
+            },
+            "status": {
+              "const": "draft"
+            },
+            "submitted": {
+              "const": false
+            },
+            "requested_uses": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "stack_optimization",
+                  "evaluation",
+                  "small_model_training"
+                ]
+              }
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "events",
+        "conversations",
+        "sources"
+      ],
+      "properties": {
+        "events": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        },
+        "conversations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automatic_redaction",
+        "manual_review_confirmed",
+        "attachments_included"
+      ],
+      "properties": {
+        "automatic_redaction": {
+          "const": true
+        },
+        "manual_review_confirmed": {
+          "const": true
+        },
+        "attachments_included": {
+          "const": false
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sha256",
+          "format",
+          "selected_events"
+        ],
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "format": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "selected_events": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "source",
+          "conversation_id",
+          "kind",
+          "role",
+          "timestamp",
+          "tool_name",
+          "content",
+          "origin",
+          "content_sha256",
+          "edited",
+          "trust",
+          "instruction_authority"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "conversation_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "role": {
+            "enum": [
+              "user",
+              "human",
+              "assistant",
+              "tool",
+              "agent",
+              "harness",
+              "system",
+              "developer",
+              "document",
+              "unknown"
+            ]
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tool_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000000
+          },
+          "origin": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file_sha256",
+              "line",
+              "item"
+            ],
+            "properties": {
+              "file_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "item": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "content_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "edited": {
+            "type": "boolean"
+          },
+          "trust": {
+            "const": "untrusted_trace"
+          },
+          "instruction_authority": {
+            "const": "none"
+          }
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "sha256"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "intent": {
+            "const": "personal_export"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "offer": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "offer": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "recipient",
+              "status",
+              "submitted",
+              "requested_uses",
+              "note"
+            ],
+            "properties": {
+              "recipient": {
+                "const": "Agent-Me"
+              },
+              "status": {
+                "const": "draft"
+              },
+              "submitted": {
+                "const": false
+              },
+              "requested_uses": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "stack_optimization",
+                    "evaluation",
+                    "small_model_training"
+                  ]
+                }
+              },
+              "note": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

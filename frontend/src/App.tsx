@@ -26,12 +26,33 @@ import {
   WorkflowMode,
 } from "./workflowLink";
 import "./styles.css";
+import "./WorkspaceTheme.css";
 import { PersonalWorkspace } from "./PersonalWorkspace";
+import { TraceStudio } from "./TraceStudio";
+import { ProductHome, PrivacyPage, MarketNotFound } from "./ProductHome";
+import { SubmitPage } from "./SubmitPage";
+import { ReceiptPage } from "./ReceiptPage";
+import { McpPage } from "./McpPage";
+import { BuyerReview } from "./BuyerReview";
 
 const DEFAULT_MAX_QUESTION_CHARS = 8000;
 type RequestError = { detail: string | null };
 
 export function App() {
+  const path = window.location.pathname.replace(/\/$/, "") || "/";
+  if (path === "/") return <ProductHome />;
+  if (path === "/mcp") return <McpPage />;
+  if (path === "/traces") return <TraceStudio />;
+  if (path === "/submit") return <SubmitPage />;
+  if (path === "/buyer") return <BuyerReview />;
+  if (path === "/submissions") return <ReceiptPage />;
+  if (/^\/submissions\/[^/]+$/.test(path)) return <ReceiptPage submissionId={path.split("/")[2]} />;
+  if (path === "/privacy") return <PrivacyPage />;
+  if (path === "/workspace") return import.meta.env.VITE_PUBLIC_MARKET === "true" ? <MarketNotFound /> : <AgentWorkspace />;
+  return <MarketNotFound />;
+}
+
+function AgentWorkspace() {
   const [locale, setLocale] = useState<Locale>(initialLocale);
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<ChatResponse | CollaborationResponse | null>(null);
@@ -159,123 +180,139 @@ export function App() {
   }
 
   return (
-    <main>
-      <div className="toolbar">
-        <label htmlFor="locale">{text.language}</label>
-        <select
-          id="locale"
-          value={locale}
-          onChange={(event) => setLocale(event.target.value as Locale)}
-        >
-          {supportedLocales.map(({ code, label }) => (
-            <option key={code} value={code}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <header>
-        <div className="mark" aria-hidden="true">
-          {profile?.name.trim().charAt(0).toUpperCase() || "A"}
+    <div className="app-shell">
+      <nav className="topbar" aria-label="Agent-Me">
+        <a className="brand-lockup" href="/" aria-label="Agent-Me home">
+          <div className="mark" aria-hidden="true">
+            {profile?.name.trim().charAt(0).toUpperCase() || "A"}
+          </div>
+          <span className="brand-name">Agent-Me</span>
+          <span className="brand-divider" aria-hidden="true">/</span>
+          <span className="runtime-label"><span aria-hidden="true" />{text.extractiveMode}</span>
+        </a>
+        <div className="toolbar">
+          <a href="/traces">Activity review</a>
+          <label htmlFor="locale">{text.language}</label>
+          <select
+            id="locale"
+            value={locale}
+            onChange={(event) => setLocale(event.target.value as Locale)}
+          >
+            {supportedLocales.map(({ code, label }) => (
+              <option key={code} value={code}>
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
-        <div>
+      </nav>
+
+      <main id="main-content">
+        <header className="hero">
           <p className="eyebrow">{profile?.name || text.projectLabel}</p>
           <h1>{text.title}</h1>
           <p className="intro">{profile?.description || text.intro}</p>
-        </div>
-      </header>
+        </header>
 
-      {profile?.personal_enabled && <PersonalWorkspace external={profile.external_provider_enabled} maxQuestionChars={maxQuestionChars} />}
+        <div className="workspace-grid">
+          {profile?.personal_enabled && <PersonalWorkspace external={profile.external_provider_enabled} maxQuestionChars={maxQuestionChars} />}
 
-      <form onSubmit={submit} aria-busy={busy}>
-        <fieldset className="workflow-picker">
-          <legend>{text.workflowMode}</legend>
-          <div className="workflow-options">
-            <label>
-              <input
-                type="radio"
-                name="workflow"
-                value="standard"
-                checked={workflowMode === "standard"}
-                onChange={() => selectWorkflow("standard")}
-                disabled={busy}
+          <form className="query-console" onSubmit={submit} aria-busy={busy}>
+            <div className="console-heading">
+              <div>
+                <span className="section-kicker">{text.workflowMode}</span>
+                <label htmlFor="question">{text.formLabel}</label>
+              </div>
+              <span className="console-mode">{workflowMode}</span>
+            </div>
+            <fieldset className="workflow-picker">
+              <legend className="sr-only">{text.workflowMode}</legend>
+              <div className="workflow-options">
+                <label>
+                  <input
+                    type="radio"
+                    name="workflow"
+                    value="standard"
+                    checked={workflowMode === "standard"}
+                    onChange={() => selectWorkflow("standard")}
+                    disabled={busy}
+                  />
+                  <span>{text.standardWorkflow}</span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="workflow"
+                    value="collaboration"
+                    checked={workflowMode === "collaboration"}
+                    onChange={() => selectWorkflow("collaboration")}
+                    disabled={busy}
+                  />
+                  <span>{text.collaborationWorkflow}</span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="workflow"
+                    value="verified"
+                    checked={workflowMode === "verified"}
+                    onChange={() => selectWorkflow("verified")}
+                    disabled={busy}
+                  />
+                  <span>{text.verifiedWorkflow}</span>
+                </label>
+              </div>
+              {workflowMode === "collaboration" && (
+                <p className="workflow-hint">{text.collaborationHint}</p>
+              )}
+              {workflowMode === "verified" && (
+                <p className="workflow-hint">{text.verifiedHint}</p>
+              )}
+            </fieldset>
+            <div className="ask-row">
+              <textarea
+                id="question"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                placeholder={text.placeholder}
+                maxLength={maxQuestionChars}
+                aria-describedby="question-meta"
+                rows={5}
               />
-              {text.standardWorkflow}
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="workflow"
-                value="collaboration"
-                checked={workflowMode === "collaboration"}
-                onChange={() => selectWorkflow("collaboration")}
-                disabled={busy}
-              />
-              {text.collaborationWorkflow}
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="workflow"
-                value="verified"
-                checked={workflowMode === "verified"}
-                onChange={() => selectWorkflow("verified")}
-                disabled={busy}
-              />
-              {text.verifiedWorkflow}
-            </label>
-          </div>
-          {workflowMode === "collaboration" && (
-            <p className="workflow-hint">{text.collaborationHint}</p>
-          )}
-          {workflowMode === "verified" && (
-            <p className="workflow-hint">{text.verifiedHint}</p>
-          )}
-        </fieldset>
-        <label htmlFor="question">{text.formLabel}</label>
-        <div className="ask-row">
-          <textarea
-            id="question"
-            value={question}
-            onChange={(event) => setQuestion(event.target.value)}
-            placeholder={text.placeholder}
-            maxLength={maxQuestionChars}
-            aria-describedby="question-meta"
-            rows={4}
-          />
-          <button disabled={!question.trim() || busy} type="submit">
-            {loading ? text.searching : text.ask}
-          </button>
+              <button disabled={!question.trim() || busy} type="submit">
+                {loading ? text.searching : text.ask}
+              </button>
+            </div>
+            <div id="question-meta" className="question-meta">
+              <span className="privacy-message"><span aria-hidden="true" />{privacyMessage}</span>
+              <span className="character-count">
+                {question.length} / {maxQuestionChars} {text.characters}
+              </span>
+            </div>
+            <div className="comparison-action">
+              <button type="button" disabled={!question.trim() || busy} onClick={() => compare(question)} aria-describedby="compare-help">
+                {text.compareWorkflows}
+              </button>
+              <p id="compare-help" className="workflow-hint">{text.compareHelp}</p>
+            </div>
+          </form>
         </div>
-        <div id="question-meta" className="question-meta">
-          <span>{privacyMessage}</span>
-          <span>
-            {question.length} / {maxQuestionChars} {text.characters}
-          </span>
-        </div>
-        <div className="comparison-action">
-          <button type="button" disabled={!question.trim() || busy} onClick={() => compare(question)} aria-describedby="compare-help">
-            {text.compareWorkflows}
-          </button>
-          <p id="compare-help" className="workflow-hint">{text.compareHelp}</p>
-        </div>
-      </form>
 
-      {error && (
-        <p role="alert" className="error">
-          {error.detail ? `${text.requestFailed}: ${error.detail}` : text.requestFailed}
-        </p>
-      )}
+        {error && (
+          <p role="alert" className="error">
+            {error.detail ? `${text.requestFailed}: ${error.detail}` : text.requestFailed}
+          </p>
+        )}
 
-      <LocalRunReplay text={text} />
+        <LocalRunReplay text={text} />
 
-      {result && <AnswerResult result={result} text={text} />}
-      {comparison && (
-        <WorkflowComparison comparison={comparison} comparing={comparing} text={text} onRetry={() => compare(comparison.question)} />
-      )}
+        {result && <AnswerResult result={result} text={text} />}
+        {comparison && (
+          <WorkflowComparison comparison={comparison} comparing={comparing} text={text} onRetry={() => compare(comparison.question)} />
+        )}
 
-      <footer>{text.footer}</footer>
-    </main>
+        <footer>{text.footer}</footer>
+      </main>
+    </div>
   );
 }

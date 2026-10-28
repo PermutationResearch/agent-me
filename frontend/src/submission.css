@@ -1,0 +1,119 @@
+.trace-studio .submission-page-heading { max-width: 780px; margin-bottom: 44px; }
+.trace-studio .submission-page-heading h1 { font-size: clamp(38px, 5vw, 62px); line-height: 1.08; letter-spacing: -.045em; font-weight: 520; }
+.trace-studio .submission-page-heading > p:last-child { max-width: 520px; margin-top: 22px; line-height: 1.7; }
+.trace-studio .submission-page-body { max-width: 960px; margin: 0 auto; }
+.trace-studio .submission-intake-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 72px; align-items: start; }
+.trace-studio .submission-file-card { padding: 36px; text-align: center; }
+.trace-studio .submission-file-symbol { display: grid; place-items: center; width: 60px; height: 60px; margin: 0 auto 22px; border: 1px solid #e3e9d9; border-radius: 14px; background: #f5f8ee; color: #556d3b; }
+.trace-studio .submission-file-symbol svg { width: 35px; height: 35px; }
+.trace-studio .submission-file-card > h2 { font-size: 25px; letter-spacing: -.8px; font-weight: 550; }
+.trace-studio .submission-file-card > p { margin-top: 14px; }
+.trace-studio .submission-file-card > .trace-button { margin-top: 28px; }
+.trace-studio .submission-file-divider { display: flex; flex-direction: column; gap: 8px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 12px; color: #66755b; }
+.trace-studio .submission-file-divider a { color: #2b4821; font-weight: 600; }
+.trace-studio .submission-steps { padding: 10px 0; }
+.trace-studio .submission-steps ol { display: grid; gap: 30px; padding: 0; margin: 28px 0 30px; list-style: none; }
+.trace-studio .submission-steps li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; }
+.trace-studio .submission-steps li > span { color: #6c8059; font-size: 12px; padding-top: 3px; }
+.trace-studio .submission-steps h3 { margin-bottom: 8px; font-size: 16px; font-weight: 550; letter-spacing: -.3px; }
+.trace-studio .submission-steps li p { max-width: 290px; color: #65725d; font-size: 13px; line-height: 1.7; }
+.trace-studio .submission-fineprint { color: #66745c; font-size: 12px; line-height: 1.7; }
+.trace-studio .submission-fineprint a { color: #345b28; text-decoration: underline; text-underline-offset: 3px; }
+.trace-studio .submission-open-file { display: flex; flex-wrap: wrap; gap: 12px; padding: 0 4px 16px; color: #65725d; font-size: 12px; }
+.trace-studio .submission-open-file span { color: #25311f; overflow-wrap: anywhere; }
+.trace-studio .submission-compose { padding: 28px; }
+.trace-studio .submission-section-top { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 12px; }
+.trace-studio .submission-section-top h2 { margin-top: 7px; font-size: 25px; font-weight: 550; letter-spacing: -.7px; }
+.trace-studio .submission-section-top h3 { font-size: 19px; font-weight: 550; letter-spacing: -.4px; overflow-wrap: anywhere; }
+.trace-studio .submission-section-top .trace-text-button { flex-shrink: 0; }
+.trace-studio .submission-pack-summary { display: grid; grid-template-columns: repeat(3, 1fr); margin: 28px 0; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.trace-studio .submission-pack-summary > div { display: flex; flex-direction: column; gap: 4px; padding-left: 20px; border-left: 1px solid var(--line); }
+.trace-studio .submission-pack-summary > div:first-child { padding-left: 0; border-left: 0; }
+.trace-studio .submission-pack-summary strong { font-size: 28px; line-height: 1.1; font-weight: 500; letter-spacing: -.7px; }
+.trace-studio .submission-pack-summary span { color: #65725d; font-size: 12px; }
+.trace-studio .submission-small-label { display: block; margin-bottom: 9px; color: #65725d; font-size: 11px; font-weight: 500; }
+.trace-studio .submission-use-preview { margin: 20px 0; }
+.trace-studio .submission-use-preview > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.trace-studio .submission-note { margin: 20px 0; padding: 16px; background: #f8faf4; border-radius: 7px; }
+.trace-studio .submission-note p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; font-size: 13px; }
+.trace-studio .submission-pack-preview { margin: 24px 0; padding: 16px 0; border-block: 1px solid var(--line); }
+.trace-studio .submission-pack-preview summary { cursor: pointer; color: #48643b; font-size: 12px; }
+.trace-studio .submission-pack-preview article { padding: 18px 0; border-bottom: 1px solid #eef1e9; }
+.trace-studio .submission-pack-preview article:last-child { border-bottom: 0; }
+.trace-studio .submission-pack-preview article > span { color: #65725d; font-size: 11px; }
+.trace-studio .submission-pack-preview pre { max-height: 280px; margin-top: 10px; padding: 15px; border: 1px solid #e8ece2; border-radius: 6px; background: #fcfdf9; color: #2b3527; font: 12px/1.7 ui-monospace, monospace; white-space: pre-wrap; overflow: auto; overflow-wrap: anywhere; }
+.trace-studio .submission-confirm { display: flex; align-items: flex-start; gap: 10px; margin-top: 6px; color: #2e3e25; font-size: 13px; font-weight: 550; cursor: pointer; }
+.trace-studio .submission-confirm input { width: 16px; height: 16px; min-height: 16px; flex-shrink: 0; margin: 2px 0 0; padding: 0; accent-color: #577f2e; }
+.trace-studio .submission-service { display: flex; align-items: center; gap: 7px; color: #526846; font-size: 11px; }
+.trace-studio .submission-service-dot { width: 5px; height: 5px; border-radius: 50%; background: #5a823c; }
+.trace-studio .submission-service-dot.unavailable { background: #a3ab9b; }
+.trace-studio .submission-send-row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.trace-studio .submission-hash { margin-top: 24px; color: #65725d; font-size: 10px; }
+.trace-studio .submission-hash code { display: block; margin-top: 6px; overflow-wrap: anywhere; font-size: 10px; font-family: ui-monospace, monospace; }
+.trace-studio .submission-page-back { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; color: #65725d; font-size: 12px; }
+.trace-studio .submission-receipt-header { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 32px; }
+.trace-studio .submission-receipt-header h2 { margin: 4px 0 8px; font-size: clamp(27px, 3.2vw, 36px); font-weight: 500; letter-spacing: -1.1px; }
+.trace-studio .submission-receipt-header > .market-status { margin-left: auto; }
+.trace-studio .submission-checkmark { display: grid; flex-shrink: 0; place-items: center; width: 49px; height: 49px; border: 1px solid #d6e8bd; border-radius: 50%; background: #f0f7e6; color: #42762a; font-size: 24px; }
+.trace-studio .submission-receipt-grid { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 22px; }
+.trace-studio .submission-receipt-access, .trace-studio .submission-receipt-detail { min-width: 0; padding: 24px; }
+.trace-studio .submission-receipt-access h3 { margin: 7px 0 10px; font-size: 22px; font-weight: 550; letter-spacing: -.6px; }
+.trace-studio .submission-receipt-access .market-label { margin-top: 18px; }
+.trace-studio .submission-receipt-access .trace-button { width: 100%; margin: 20px 0 13px; }
+.trace-studio .submission-receipt-access input { font-size: 11px; font-family: ui-monospace, monospace; }
+.trace-studio .submission-facts { margin: 24px 0; }
+.trace-studio .submission-facts > div { display: flex; justify-content: space-between; gap: 15px; margin: 12px 0; font-size: 12px; }
+.trace-studio .submission-facts dt { color: #65725d; }
+.trace-studio .submission-facts dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+.trace-studio .submission-proposal { margin-top: 22px; padding: 28px; }
+.trace-studio .submission-proposal h3 { margin-top: 6px; font-size: 22px; }
+.trace-studio .submission-proposal > .market-muted { margin-top: 20px; max-width: 700px; line-height: 1.8; }
+.trace-studio .submission-proposal > .submission-fineprint { margin-top: 15px; }
+.trace-studio .submission-offer-amount { margin: 24px 0 6px; font-size: clamp(35px, 5vw, 48px); font-weight: 450; letter-spacing: -.05em; }
+.trace-studio .submission-offer-message { margin: 20px 0; padding: 18px; background: #f7faf0; border-radius: 7px; color: #3f5032; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+.trace-studio .submission-action-row { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 20px; }
+.trace-studio .submission-offer-history { padding: 20px 28px; margin-top: 22px; }
+.trace-studio .submission-offer-history summary { cursor: pointer; color: #586b4b; font-size: 12px; }
+.trace-studio .submission-offer-history > div { display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; padding-top: 20px; font-size: 12px; }
+.trace-studio .submission-offer-history > div > span:last-child { color: #65725d; }
+.trace-studio .submission-withdraw { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 24px 0; color: #65725d; font-size: 12px; }
+.trace-studio .submission-withdraw .submission-action-row { margin-top: 0; }
+.trace-studio .submission-danger-button { border-color: #d5bcb1; background: #fff8f4; color: #824734; }
+.trace-studio .submission-notice { margin-top: 20px; padding: 12px 16px; background: #f0f6e7; border: 1px solid #e0e9d2; border-radius: 7px; color: #436530; font-size: 12px; }
+.trace-studio .submission-lookup-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); gap: 90px; align-items: start; padding: 50px 0; }
+.trace-studio .submission-lookup-layout h1 { font-size: clamp(35px, 5vw, 61px); line-height: 1.1; letter-spacing: -.04em; font-weight: 500; }
+.trace-studio .submission-lookup-layout header > .market-muted { max-width: 340px; margin-top: 24px; line-height: 1.8; }
+.trace-studio .submission-lookup-note { display: flex; align-items: center; gap: 13px; margin-top: 40px; color: #667b52; font-size: 12px; line-height: 1.7; }
+.trace-studio .submission-lookup-note > span { display: grid; place-items: center; height: 38px; width: 38px; border: 1px solid #e3eada; border-radius: 50%; font-size: 18px; }
+.trace-studio .submission-lookup-card { padding: 30px; }
+.trace-studio .submission-lookup-card h2 { margin: 8px 0 24px; font-size: 24px; font-weight: 550; letter-spacing: -.7px; }
+.trace-studio .submission-receipt-file-button { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 49px; padding-inline: 16px; border: 1px solid #dce4d3; color: #3f5e2e; background: #f7faf2; }
+.trace-studio .submission-lookup-card > .submission-fineprint { margin-top: 10px; }
+.trace-studio .submission-lookup-card > .submission-fineprint:last-child { margin-top: 22px; }
+.trace-studio .submission-lookup-card .trace-button { width: 100%; margin-top: 4px; }
+.trace-studio .submission-or { display: flex; align-items: center; gap: 12px; margin: 25px 0; color: #74816a; font-size: 10px; }
+.trace-studio .submission-or::before, .trace-studio .submission-or::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+@media (max-width: 900px) {
+  .trace-studio .submission-intake-layout { gap: 30px; }
+  .trace-studio .submission-lookup-layout { gap: 32px; padding-top: 20px; }
+  .trace-studio .submission-receipt-header > .market-status { margin-left: 69px; }
+  .trace-studio .submission-receipt-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .trace-studio .submission-intake-layout, .trace-studio .submission-lookup-layout { grid-template-columns: 1fr; gap: 30px; }
+  .trace-studio .submission-compose, .trace-studio .submission-file-card, .trace-studio .submission-proposal, .trace-studio .submission-lookup-card { padding: 22px; }
+  .trace-studio .submission-section-top { align-items: flex-start; flex-wrap: wrap; gap: 6px; }
+  .trace-studio .submission-section-top h2 { font-size: 23px; }
+  .trace-studio .submission-pack-summary strong { font-size: 23px; }
+  .trace-studio .submission-pack-summary > div { padding-left: 12px; }
+  .trace-studio .submission-pack-summary span { font-size: 10px; }
+  .trace-studio .submission-page-heading { margin-bottom: 30px; }
+  .trace-studio .submission-steps { padding-inline: 7px; }
+  .trace-studio .submission-receipt-header { gap: 14px; }
+  .trace-studio .submission-receipt-header > .market-status { margin-left: 63px; }
+  .trace-studio .submission-receipt-header > div { flex: 1; }
+  .trace-studio .submission-receipt-header h2 { font-size: 27px; }
+  .trace-studio .submission-withdraw { align-items: flex-start; flex-direction: column; }
+  .trace-studio .submission-lookup-note { margin-top: 25px; }
+}
+.trace-studio .submission-preview-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; color: #65725d; font-size: 11px; }

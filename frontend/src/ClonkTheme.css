@@ -1,0 +1,285 @@
+/* Shared public-product surfaces. Homepage composition lives in ProductHome.css. */
+body.trace-studio-page:not(:has(.product-home)) { background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) {
+  --ink: #1c1e22;
+  --ink-soft: #626560;
+  --ink-muted: #747772;
+  --canvas: #f5f5f1;
+  --surface: #fff;
+  --line: #e3e4de;
+  --line-strong: #d1d3cc;
+  --accent: #f47b43;
+  --focus: #3a3c40;
+  --market-muted: #747772;
+  --market-line: #e3e4de;
+  color: #1c1e22;
+  background: #f5f5f1;
+  font-family: "Agent Instrument Sans", "Agent Geist", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: -.012em;
+}
+.app-shell.trace-studio.market-shell:not(:has(.product-home)) { width: 100%; max-width: none; }
+.app-shell.trace-studio.market-shell:not(:has(.product-home)) .market-main { width: min(1120px,calc(100% - 64px)); max-width: none; padding-bottom: 70px; min-height: calc(100dvh - 350px); }
+.app-shell.trace-studio:not(:has(.product-home)) :is(button,input,select,textarea) { font-family: inherit; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(h1,h2,h3) { color: #1c1e22; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(a,button,input,select,textarea,summary):focus-visible { outline: 2px solid #393b40; outline-offset: 4px; }
+.app-shell.trace-studio:not(:has(.product-home)) input:is([type="checkbox"],[type="radio"]) { accent-color: #282a2d; }
+.app-shell.trace-studio:not(:has(.product-home)) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.app-shell.trace-studio:not(:has(.product-home)) :is(select,textarea) { min-height: 46px; padding: 12px 14px; border-color: #e3e4de; border-radius: 11px; color: #33363a; background: #fff; font-size: 14px; box-shadow: 0 1px 2px #30333003; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(input,textarea)::placeholder { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-button,.trace-send-button) { min-height: 47px; padding-inline: 22px; border: 1px solid #1e2024; border-radius: 30px; color: #fff; background: #1e2024; font-size: 13px; font-weight: 500; box-shadow: 0 3px 7px #1a1c1d0a; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-button,.trace-send-button):hover:not(:disabled) { border-color: #3c3e43; color: #fff; background: #3c3e43; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-button,.trace-send-button):active:not(:disabled) { transform: translateY(1px); }
+.app-shell.trace-studio:not(:has(.product-home)) button:disabled { color: #a0a29b; border-color: #e3e4de; background: #e3e4de; opacity: 1; box-shadow: none; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-text-button { color: #626560; background: transparent; border-color: transparent; font-size: 12px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-text-button:hover:not(:disabled) { color: #1e2024; background: #e3e4de; border-color: transparent; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-text-button:disabled { color: #a0a29b; background: transparent; border-color: transparent; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.market-inline-link,.trace-review-button) { color: #4d5157; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-icon-button { border: 1px solid #e3e4de; border-radius: 50%; color: #626560; background: #fff; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-icon-button:hover:not(:disabled) { border-color: #bfc1ba; color: #22252a; background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.market-kicker,.trace-breadcrumb) { color: #747772; font-size: 11px; font-weight: 500; letter-spacing: .015em; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-page-heading { padding-top: 68px; padding-bottom: 30px; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-page-heading h1 { max-width: 800px; font-size: clamp(40px,4.4vw,56px); font-weight: 450; line-height: 1.08; letter-spacing: -.045em; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-page-heading>p:last-child { color: #747772; font-size: 15px; line-height: 1.8; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-muted { color: #747772; font-size: 14px; line-height: 1.8; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-card { border-color: #e3e4de; border-radius: 22px; background: #fff; box-shadow: 0 2px 5px #30333003,0 16px 30px -28px #3033302b; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-label { color: #494c49; font-size: 13px; font-weight: 500; gap: 9px; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.market-pill,.market-status) { color: #626560; background: #f5f5f1; border-radius: 7px; font-size: 11px; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.market-error,.trace-error) { border-color: #f0d5c6; border-radius: 12px; color: #9c502b; background: #fff7f1; font-size: 13px; }
+
+/* Trace review: a real product window with a quiet, useful selection rail. */
+.app-shell.trace-studio:not(.market-shell) .trace-nav:not(.site-navigation) { width: min(1180px,calc(100% - 48px)); min-height: 68px; margin: 16px auto 0; padding: 9px 20px; top: 14px; border: 1px solid #e3e4de; border-radius: 22px; color: #23252a; background: #fafaf7ed; backdrop-filter: blur(16px); box-shadow: 0 3px 14px #30333003; }
+.app-shell.trace-studio:not(.market-shell) .trace-brand { font-size: 18px; font-weight: 600; letter-spacing: -.035em; }
+.app-shell.trace-studio:not(.market-shell) .trace-brand-mark { width: 27px; height: 27px; border-radius: 7px; color: #fff; background: #f47b43; }
+.app-shell.trace-studio:not(.market-shell) .trace-brand-mark svg { width: 25px; height: 25px; stroke-width: 1.7; }
+.app-shell.trace-studio:not(.market-shell) .trace-nav-links>a { color: #747772; font-size: 12px; }
+.app-shell.trace-studio:not(.market-shell) .trace-nav-links>a[aria-current] { color: #292c30; font-weight: 500; }
+.app-shell.trace-studio:not(.market-shell) .trace-nav-links>a[aria-current]::after { height: 1px; background: #35383d; }
+.app-shell.trace-studio:not(.market-shell) .trace-nav-links>a:hover { color: #25272b; background: transparent; }
+.app-shell.trace-studio:not(.market-shell) .trace-local-state { color: #747772; font-size: 11px; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-local-state>span:first-child,.trace-pack-local>span,.submission-service-dot) { background: #f09970; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-main { width: min(1180px,calc(100% - 64px)); padding-top: 58px; padding-bottom: 50px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-page-heading { margin-bottom: 37px; align-items: end; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-page-heading h1 { color: #1c1e22; font-size: clamp(38px,4.3vw,52px); line-height: 1.08; font-weight: 450; letter-spacing: -.045em; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-page-heading>div>p:last-child { color: #747772; font-size: 14px; line-height: 1.8; margin-top: 14px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-sample-label { color: #99613e; border: 1px solid #edd5c5; background: #faf0e6; font-weight: 500; border-radius: 6px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-layout { grid-template-columns: minmax(0,1fr) 322px; gap: 26px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-upload-surface { min-height: 405px; padding: 45px 30px; border-color: #e3e4de; border-radius: 24px; background: #fff; box-shadow: 0 3px 7px #30333003,0 24px 40px -35px #30333025; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-upload-symbol,.submission-file-symbol) { width: 60px; height: 60px; border-color: #e3e4de; border-radius: 17px; color: #626560; background: #f5f5f1; box-shadow: 0 2px 4px #30333005; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-empty h2 { color: #303338; font-size: 26px; font-weight: 450; letter-spacing: -.035em; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-upload-surface>p { color: #747772; font-size: 13px; line-height: 1.9; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-source-chips>span,.trace-local-copy,.trace-file-types,.trace-source-chips i) { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-source-chips i { border-color: #d1d3cc; border-radius: 5px; background: #fff; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-library { padding: 27px; border: 1px solid #e3e4de; border-radius: 24px; background: #fff; box-shadow: 0 3px 7px #30333003,0 24px 40px -35px #30333025; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-library-heading h2 { font-size: 20px; letter-spacing: -.035em; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-library-heading p,.trace-library-count small,.trace-metrics span,.trace-page-actions>span,.trace-record-meta,.trace-record-content>small,.trace-pagination,.trace-help summary,.trace-help details>p,.trace-help details>ul) { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-help { border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-help>details { border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-help summary { min-height: 48px; font-size: 12px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-help details[open]>summary { color: #303330; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-metrics { gap: 32px; border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-metrics strong { font-size: 25px; font-weight: 450; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-filters { grid-template-columns: minmax(0,1fr) 113px 113px; gap: 7px; margin-top: 23px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-filters :is(input,select) { min-height: 40px; padding: 9px; font-size: 11px; border-radius: 9px; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-filters .trace-search-label input { min-height: 40px; font-size: 12px; padding-left: 34px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-search-label svg { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-page-actions .trace-text-button { font-size: 11px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-records { border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-records>li { padding-block: 18px; border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-records>li.is-selected { background: #f4f4ee; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-preview { color: #494c49; font-size: 13px; line-height: 1.75; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-source-badge { border-color: #e3e4de; color: #626560; border-radius: 5px; background: #f5f5f1; font-size: 10px; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-edited-label { color: #af7144; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-record-meta { font-size: 10px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-review-button { color: #747772; font-size: 11px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-review-button:hover:not(:disabled) { border-color: transparent; color: #303330; background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-editor { border-color: #e3e4de; border-radius: 15px; background: #f5f5f1; padding: 22px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-editor :is(p,small),.app-shell.trace-studio:not(:has(.product-home)) .trace-inspector-heading span { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-editor textarea { margin-top: 15px; color: #494c49; font: 12px/1.8 ui-monospace,monospace; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack { padding: 26px; border-color: #e3e4de; border-radius: 23px; background: #fff; box-shadow: 0 3px 7px #30333003,0 24px 40px -35px #30333025; scrollbar-color: #d1d3cc transparent; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack-heading h2 { font-size: 19px; letter-spacing: -.035em; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack-heading>span { color: #858882; font-size: 10px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack-total>strong { color: #303330; font-size: 54px; line-height: 1.05; font-weight: 450; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-pack-total>span,.trace-pack-breakdown,.trace-pack-description,.trace-checkbox,.trace-uses legend,.trace-confirm,.trace-offer-note summary,.trace-pack-details summary,.trace-pack-details p,.trace-offer-notice,.trace-pack-local) { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack-breakdown { border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack-breakdown strong { color: #494c49; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-intent { border-color: #e3e4de; border-radius: 10px; background: #f5f5f1; padding: 4px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-intent label { min-height: 34px; color: #858882; border-radius: 7px; font-size: 10px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-intent label:has(input:checked) { border-color: #d1d3cc; color: #494c49; background: #fff; box-shadow: 0 1px 3px #3033300a; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-export-button { padding-inline: 16px; font-size: 11px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-send-button { margin-top: 10px; font-size: 11px; width: 100%; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-pack-details { border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-import-status,.trace-download-status) { border-color: #e3e4de; color: #626560; background: #f5f5f1; border-radius: 12px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-footer { border-color: #e3e4de; color: #858882; padding-top: 30px; margin-top: 50px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-footer>span:first-child { color: #626560; font-weight: 500; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-mobile-pack-link { border-color: #e3e4de; border-radius: 16px; color: #fff; background: #303330; box-shadow: 0 5px 25px #30333021; }
+
+/* Submission, private receipts, and the buying workspace share the same paper surfaces. */
+.app-shell.trace-studio:not(:has(.product-home)) .submission-page-heading { text-align: center; max-width: 740px; margin: 0 auto 40px; padding-top: 65px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-page-heading .market-kicker { justify-content: center; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-page-heading h1 { font-size: clamp(42px,4.8vw,60px); margin-inline: auto; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-page-heading>p:last-child { max-width: 550px; margin: 22px auto 0; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-intake-layout { gap: 65px; padding-bottom: 30px; max-width: 1000px; margin-inline: auto; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-file-card { padding: 45px 40px 35px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-file-card>h2 { font-size: 26px; font-weight: 450; letter-spacing: -.035em; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.submission-file-divider,.submission-fineprint,.submission-steps li p,.submission-steps li>span,.submission-open-file,.submission-small-label,.submission-pack-summary span,.submission-pack-preview article>span,.submission-hash,.submission-facts dt,.submission-page-back,.submission-withdraw,.submission-or,.submission-preview-pagination) { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.submission-file-divider a,.submission-fineprint a,.submission-pack-preview summary,.submission-offer-history summary) { color: #494c49; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-steps { padding-top: 22px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-steps ol { gap: 30px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-steps h3 { font-size: 17px; font-weight: 500; letter-spacing: -.03em; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-steps li p { line-height: 1.85; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-compose { padding: 35px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-section-top h2 { font-size: 28px; font-weight: 450; letter-spacing: -.04em; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.submission-note,.submission-offer-message) { color: #626560; background: #f5f5f1; border-radius: 12px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-pack-preview pre { border-color: #e3e4de; border-radius: 10px; color: #494c49; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-confirm { color: #494c49; font-size: 13px; font-weight: 500; line-height: 1.7; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-checkmark { border-color: #eadcd3; color: #c58b65; background: #fbf4ec; font-size: 22px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-header { margin-bottom: 32px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-header h2 { font-size: clamp(28px,3.6vw,39px); font-weight: 450; letter-spacing: -.04em; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-progress { margin-bottom: 28px; border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-progress .tz-root { --tz-accent: #303330; --tz-on-accent: #fff; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-progress .tz-title { color: #494c49; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-progress .tz-item[aria-current="step"] .tz-title { color: #303330; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-progress :is(.tz-desc,.tz-time,.submission-progress-heading>span) { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.submission-receipt-access,.submission-receipt-detail) { padding: 28px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-access h3 { font-size: 23px; font-weight: 450; letter-spacing: -.035em; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-proposal { padding: 32px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-offer-amount { color: #303330; font-size: clamp(40px,5vw,54px); font-weight: 450; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-notice { border-color: #e3e4de; color: #626560; background: #f5f5f1; border-radius: 12px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-layout { gap: 85px; padding-top: 55px; padding-bottom: 50px; align-items: center; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-layout h1 { font-size: clamp(42px,5vw,62px); font-weight: 450; letter-spacing: -.045em; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-layout header>.market-muted { max-width: 360px; font-size: 15px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-note { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-note>span { border-color: #e3e4de; color: #858882; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-card { padding: 36px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-card h2 { font-size: 27px; font-weight: 450; letter-spacing: -.04em; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-file-button { border-color: #e3e4de; border-radius: 12px; color: #626560; background: #f5f5f1; font-size: 13px; }
+.app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-file-button:hover:not(:disabled) { border-color: #bfc1ba; color: #494c49; background: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-heading { padding-top: 65px; margin-bottom: 25px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate { border-color: #e3e4de; border-radius: 26px; background: #fff; box-shadow: 0 14px 36px -28px #30333033; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate-art { background: #eeeee6; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate-art>span { color: #747772; border-color: #e3e4de; background: #f5f5f1; border-radius: 24px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate-art>div { border-color: #e3e4de; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate-content { padding: 45px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate h2 { font-size: 33px; font-weight: 450; letter-spacing: -.04em; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-gate-content>p:not(.market-kicker) { color: #747772; font-size: 14px; line-height: 1.8; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-lock { color: #626560; border-color: #e3e4de; border-radius: 30px; background: #fff; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-overview,.buyer-inbox,.buyer-detail-meta,.buyer-records,.buyer-private-notes) { border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-overview>div>span,.buyer-overview>p,.buyer-detail-heading p,.buyer-record-total,.buyer-section-heading>span,.buyer-trust,.buyer-public-message,.buyer-offer-disclaimer,.buyer-offer-intro,.buyer-offer-closed,.buyer-loading,.buyer-pagination) { color: #747772; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox { padding-right: 22px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox-item { min-height: 140px; padding: 18px; border-color: #e3e4de; border-radius: 17px; color: #303330; background: #fff; box-shadow: 0 2px 5px #30333003; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox-item:hover { border-color: #bfc1ba; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox-item.is-selected { border-color: #a0a29b; background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox-item :is(span:not(.buyer-status),time) { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-status { color: #747772; background: #f5f5f1; border-radius: 5px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-status-accepted_pending_agreement { color: #626560; background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-detail-heading h2 { font-size: 30px; font-weight: 450; letter-spacing: -.035em; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-record-total strong { color: #303330; font-weight: 450; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-detail-meta>span { border-color: #e3e4de; color: #747772; border-radius: 7px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-detail-meta b { color: #494c49; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-use-list>span { color: #747772; background: #f5f5f1; border-radius: 5px; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-preferences>p,.buyer-preferences summary,.buyer-hash,.buyer-hash code,.buyer-private-notes article p,.buyer-private-notes time,.buyer-offer-form>label,.buyer-price-row label,.buyer-private-notes label,.buyer-offer-form legend,.buyer-use-checkbox) { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-search button,.buyer-outline-button,.buyer-pagination button) { border-color: #d1d3cc; border-radius: 20px; color: #626560; background: #fff; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-event { border-color: #e3e4de; border-radius: 12px; background: #fff; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-event summary { color: #494c49; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-event-number { color: #858882; background: #f5f5f1; border-radius: 5px; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-event summary small,.buyer-event-origin,.buyer-event-toggle,.buyer-edited) { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-event pre { border-color: #e3e4de; color: #626560; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-private-notes>article { border-color: #d1d3cc; background: #f5f5f1; border-radius: 0 10px 10px 0; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-offer-card { padding: 26px; border-color: #e3e4de; border-radius: 20px; background: #fff; box-shadow: 0 12px 30px -26px #30333030; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-offer-card h3 { color: #494c49; font-size: 28px; font-weight: 450; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-notice,.buyer-pending,.buyer-record-error) { border-color: #d1d3cc; border-radius: 12px; color: #747772; background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-no-selection { border-color: #e3e4de; border-radius: 22px; background: #fafaf7; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-no-selection>span { color: #858882; background: #f5f5f1; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-no-selection p,.buyer-no-selection>div,.buyer-empty-inbox h3,.buyer-empty-inbox p,.buyer-empty-inbox a) { color: #858882; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-policy { max-width: 780px; margin-inline: auto; padding: 12px 0 60px; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-policy section { padding-block: 27px; border-color: #e3e4de; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-policy h2 { font-size: 24px; font-weight: 450; letter-spacing: -.03em; }
+.app-shell.trace-studio:not(:has(.product-home)) .market-policy p { margin-top: 13px; color: #747772; font-size: 15px; line-height: 1.9; }
+
+
+.app-shell.trace-studio:not(:has(.product-home)) .market-main:has(.market-policy)>.market-page-heading { max-width: 780px; margin-inline: auto; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.trace-pack-description,.trace-checkbox,.trace-uses .trace-checkbox,.trace-offer-notice) { font-size: 12px; line-height: 1.7; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-intent label { font-size: 11px; }
+.app-shell.trace-studio:not(:has(.product-home)) :is(.buyer-private-notes label,.buyer-offer-form>label,.buyer-price-row label,.buyer-offer-form legend,.buyer-use-checkbox) { font-size: 12px; line-height: 1.7; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-event summary { font-size: 13px; }
+.app-shell.trace-studio:not(:has(.product-home)) .buyer-event pre { font-size: 12px; }
+
+@media(max-width:1050px) {
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-layout { grid-template-columns: minmax(0,1fr) 290px; gap: 22px; }
+  .app-shell.trace-studio:not(:has(.product-home)) :is(.trace-library,.trace-pack) { padding: 22px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-filters { grid-template-columns: minmax(0,1fr) 100px 100px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-intake-layout { gap: 40px; }
+}
+@media(max-width:850px) {
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-layout { grid-template-columns: minmax(0,1fr); gap: 24px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-pack { position: static; max-height: none; overflow: visible; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-pack-heading { position: static; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-layout { gap: 35px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-file-card { padding: 33px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-card { padding: 30px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-grid { grid-template-columns: minmax(0,1fr); }
+}
+@media(max-width:650px) {
+  .app-shell.trace-studio.market-shell:not(:has(.product-home)) .market-main { width: calc(100% - 40px); padding-bottom: 45px; }
+  .app-shell.trace-studio:not(.market-shell) .trace-nav:not(.site-navigation) { width: calc(100% - 28px); top: 10px; min-height: 98px; margin-top: 10px; padding: 13px 15px; gap: 12px; border-radius: 19px; flex-wrap: wrap; }
+  .app-shell.trace-studio:not(.market-shell) .trace-nav-links { order: 3; width: 100%; min-height: 27px; gap: 27px; }
+  .app-shell.trace-studio:not(.market-shell) .trace-local-state { margin-left: auto; font-size: 10px; }
+  .app-shell.trace-studio:not(.market-shell) .trace-brand { font-size: 17px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-main { width: calc(100% - 36px); padding-top: 36px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-page-heading { align-items: flex-start; gap: 18px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-page-heading h1 { font-size: 38px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-page-heading>div>p:last-child { font-size: 13px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-header-actions { gap: 7px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-header-actions .trace-button { min-height: 38px; padding-inline: 14px; font-size: 11px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-upload-surface { min-height: 385px; padding: 34px 22px; border-radius: 22px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-empty h2 { font-size: 24px; }
+  .app-shell.trace-studio:not(:has(.product-home)) :is(.trace-library,.trace-pack) { padding: 21px 18px; border-radius: 20px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-library-heading h2 { font-size: 19px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-library-count { font-size: 25px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-metrics { gap: 24px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-metrics strong { font-size: 22px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-filters .trace-search-label { grid-column: 1/-1; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-filters :is(input,select) { min-height: 42px; font-size: 12px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-records>li { grid-template-columns: 23px minmax(0,1fr) 42px; gap: 5px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-row-select { width: 23px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-preview { font-size: 12px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-page-actions { gap: 3px 12px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-page-actions>span { flex-basis: 100%; margin-bottom: 2px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-review-button { font-size: 10px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-editor { padding: 17px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .trace-footer { flex-wrap: wrap; gap: 10px 20px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .market-page-heading { padding-top: 42px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .market-page-heading h1 { font-size: 41px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-page-heading { margin-bottom: 30px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-intake-layout { grid-template-columns: minmax(0,1fr); gap: 28px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-file-card { padding: 30px 23px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-steps { padding: 5px 8px; }
+  .app-shell.trace-studio:not(:has(.product-home)) :is(.submission-compose,.submission-receipt-access,.submission-receipt-detail,.submission-proposal) { padding: 25px 22px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-section-top h2 { font-size: 25px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-layout { grid-template-columns: minmax(0,1fr); gap: 25px; padding-block: 0 25px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-layout header>.market-muted { font-size: 14px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-card { padding: 27px 23px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-card h2 { font-size: 25px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-lookup-note { margin-top: 24px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .submission-receipt-header h2 { font-size: 29px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-heading { padding-top: 42px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-gate { border-radius: 22px; margin-top: 15px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-gate-content { padding: 32px 26px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-gate h2 { font-size: 31px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox { padding-right: 0; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-inbox-item { flex-basis: 225px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-detail-heading h2 { font-size: 26px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .buyer-offer-card { padding: 25px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .market-policy h2 { font-size: 23px; }
+  .app-shell.trace-studio:not(:has(.product-home)) .market-policy p { font-size: 14px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell.trace-studio:not(:has(.product-home)) * { scroll-behavior: auto; animation: none; transition-duration: 0s; }
+}
+
+/* Keep the shared input reset from covering the search icon. */
+.app-shell.trace-studio:not(:has(.product-home)) .trace-filters input:not([type="checkbox"]):not([type="radio"]):not([type="file"]) { padding-left: 38px; }
+.app-shell.trace-studio:not(:has(.product-home)) .trace-search-label svg { top: 50%; transform: translateY(-50%); }

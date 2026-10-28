@@ -1,0 +1,30 @@
+{
+  "name": "@agent-me/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local trace extraction, review, GEPA optimization and consented submissions for Agent-Me",
+  "type": "module",
+  "bin": {
+    "agent-me-mcp": "dist/server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc --noEmit && node build.mjs",
+    "start": "node dist/server.js",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.25.12",
+    "tsx": "^4.21.0"
+  }
+}

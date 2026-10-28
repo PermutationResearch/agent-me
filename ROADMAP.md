@@ -1,12 +1,21 @@
 # Agent-Me Roadmap
 
-## Toward a continuously learning AI Twin
+## From owned traces to a better agent stack
 
-Agent-Me is building an AI Twin: a persistent, evidence-grounded representation that can learn from a person's knowledge, projects, conversations, decisions, preferences, and experiences over time.
+Agent-Me's main product is an open-source extraction and improvement platform. People can extract and own their agent traces, optionally sell selected trace packs to us, and use their work history to improve prompts, skills, harnesses, or smaller models for their needs.
 
-The destination is not a chatbot that merely sounds like its owner. It is a system that can increasingly work with the owner's context while remaining attributable, uncertain when appropriate, private, correctable, and inspectable.
+A personal AI Twin is one application. [Product vision](docs/PRODUCT_VISION.md) records the core direction. This roadmap separates existing code from proposed capabilities and does not promise release dates.
 
-This roadmap describes direction, not release promises. Proposed capabilities become part of Agent-Me only when their behavior, trust boundary, and evaluation method are explicit.
+## Product priorities
+
+1. **Portable extraction and trace packs — first flow implemented.** The public `/traces` studio reads supported local files in the browser, preserves roles and provenance, offers review/redaction/selection, and exports selected-only personal packs or sale-offer drafts. It runs without an account or server upload. See [Trace extraction](docs/TRACES.md). Broader connectors, large archives, and an installable local extraction workflow remain future work.
+2. **Optional trace purchasing.** Draft offer packs with requested-use preferences can now be exported locally. Build submission, buyer review, agreed usage, purchase records, and payment flows. Pricing and commercial terms are undecided. Private extraction and personal optimization remain distinct choices from selling data.
+3. **Measured stack optimization.** Describe the user's models, prompts, skills, tools, and constraints; build relevant evaluation tasks; use GEPA to propose improvements. A local archive-backed prompt/skill optimizer is implemented. Real task replay, broader stack targets, and reliable outcome labels remain work to do.
+4. **Personalized harnesses.** Generate a portable harness with context assembly, tools, skill routing, constraints, and an evaluation suite for the user's tasks. Harness generation is planned; the current sequential RAG workflow is a foundation.
+5. **Smaller models for specific needs.** Curate suitable training examples and held-out evaluations, train or adapt a selected model, and return the model/adapter with measurements. Dataset production and training are planned. Importing traces or running GEPA does not itself train model weights.
+6. **Portable delivery and repeated improvement.** Deliver prompts, skills, harness configurations, datasets, or models with source lineage and before/after results. The current GEPA candidate and JSON receipt exports are the first delivery path.
+
+**Completion signal:** a person can extract their history, choose what happens to it, and receive a portable improvement whose value is measured on their actual tasks.
 
 ## Design principles
 
@@ -33,9 +42,9 @@ The repository currently provides:
 - deterministic evaluation fixtures; and
 - a runnable FastAPI + React reference application using fictional public examples.
 
-Current boundaries are equally important: conversations are not persisted, the knowledge source is not yet a structured identity store, continuous ingestion is not implemented, and the Verifier does not prove factual truth or semantic entailment.
+The private workspace additionally persists its own chats and reviewed memory entries, retrieves a verified all-events archive, and offers local GEPA candidate runs with held-out model-judge comparisons. Public endpoints do not persist conversations. A public browser-local selection/export workflow is implemented. Offer submission, trace purchasing, harness generation, and model training are not implemented. The Verifier and GEPA proxy scores do not prove factual truth or actual task success.
 
-## Workstreams
+## Supporting AI Twin workstreams
 
 ### 1. Structured identity and memory
 

@@ -2,15 +2,15 @@
 
 # Agent-Me
 
-### Distill yourself into an AI Agent Twin.
+### Own your agent traces. Improve your stack.
 
-Feed it your knowledge, memories, projects, preferences, experiences, and decisions. Agent-Me turns them into an AI Agent Twin that keeps learning how you think and work.
+Agent-Me helps people extract and own their AI-agent work history, optionally sell selected traces to us, and use that evidence to improve the stack they work with.
 
-It is not just a chatbot that knows facts about you. It is an open-source, inspectable architecture for building a second digital version of you—one that can retrieve, reason, verify, and eventually act with your context.
+The product direction combines open-source data extraction, GEPA prompt and skill optimization, custom agent harnesses, and training smaller models for a person's needs.
 
-**An AI agent that is learning to become me.**
+**Turn your agent experience into portable data and measurable improvements.**
 
-[Quick start](#quick-start) · [Roadmap](ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Learn](LEARN.md) · [Contribute](CONTRIBUTING.md)
+[Public deployment](docs/PUBLIC_LAUNCH.md) · [Submit and review](docs/SUBMISSIONS.md) · [Trace studio](#trace-extraction-and-export) · [Quick start](#quick-start) · [Roadmap](ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Learn](LEARN.md) · [Contribute](CONTRIBUTING.md)
 
 <p>
   <a href="https://github.com/jzjzzzzzzz/agent-me/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/jzjzzzzzzz/agent-me/actions/workflows/ci.yml/badge.svg"></a>
@@ -26,34 +26,46 @@ It is not just a chatbot that knows facts about you. It is an open-source, inspe
 
 ![Agent-Me: an open-source, inspectable AI Agent Twin](docs/assets/agent-me-social-preview.png)
 
+## Trace extraction and export
+
+Open **Trace studio** in the app navigation or visit `/traces`. It works without
+an account, backend, or connected archive. Choose local Claude Code, Codex,
+OMP/Pi, agent-trace, or normalized trace files; review redacted records; edit or
+exclude sensitive content; and export only the records you select.
+
+Exports are portable JSON packs with source roles, provenance, and integrity
+checks. Choose a personal copy or a draft offer to Agent-Me with use preferences.
+Nothing is uploaded and no sale or payment is completed by exporting. See
+[Trace extraction and export](docs/TRACES.md) for supported formats and limits.
+
+The homepage at `/` now leads into this flow. Use `/submit` for exported sale-offer
+packs, `/submissions` for private receipts, and `/buyer` for the operator inbox.
+Run `python3 scripts/start_trace_market.py` to start the separate local review
+service at `http://localhost:5181/`. See [Submissions](docs/SUBMISSIONS.md) for the
+private buyer-key location and encrypted-storage option. The original agent demo
+remains at `/workspace`.
+
 ## What is Agent-Me?
 
-A conventional chatbot starts over with a prompt and returns an answer:
+Agent-Me is a platform for turning agent traces into user-controlled data and better agent systems.
 
 ```text
-user → prompt → model → answer
+extract traces → review and package → keep, export, or offer for sale
+                                  ↓
+                      evaluate the user's stack
+                                  ↓
+          optimize prompts and skills / build a harness / train a small model
+                                  ↓
+                  compare results → deliver portable improvements
 ```
 
-Agent-Me treats a personal AI as a system:
+People can use open-source extraction to obtain their own data. Selling selected trace packs to us is optional. Their history can also support a personalized harness, better prompts and skills, or a smaller model adapted to their work.
 
-```text
-your knowledge
-      ↓
-reviewable memory → retrieval → planning → evidence → critique → verification → response
-```
+The current implementation provides a FastAPI + React foundation, an opt-in private workspace, verified archive retrieval, and a local GEPA optimization flow. Browser-local trace review and selected-only export are implemented. Selected-pack submission, private receipts, buyer review, and priced proposals are implemented in a separate local intake service. Accepted proposals remain pending agreement and payment. Purchasing, final licenses, harness generation, and small-model training remain planned work. The owner's large archive import is a separate operation and must finish verification before it can be used.
 
-The aim is not merely to answer questions *about* a person. It is to build an increasingly useful AI representation of:
+See [Product vision](docs/PRODUCT_VISION.md) for the core direction and the [roadmap](ROADMAP.md) for the implementation priorities. A personal AI Twin is one application of this platform.
 
-- what I know;
-- what I have done;
-- what I prefer;
-- how I make decisions;
-- what evidence supports those beliefs; and
-- how certain the system should be about them.
-
-Today, the repository provides a runnable FastAPI + React implementation over reviewable Markdown knowledge, with deterministic retrieval and sequential agent roles. The public repository uses fictional examples; each owner keeps their real identity and memory in a separate private workspace.
-
-## Why an AI Twin?
+## AI Twin as one application
 
 Many personal chatbots are effectively a prompt, a vector database, and a chat interface. They can recall biographical facts or imitate a writing style, but that is not the same as reliably representing a person.
 
@@ -283,30 +295,18 @@ Agent-Me is not:
 
 It is an experimental architecture for building a persistent, inspectable AI representation of a person. The current implementation is an early, deliberately bounded step toward that goal.
 
-## Roadmap: toward a continuously learning AI Twin
+## Roadmap: from traces to a better stack
 
-Today, Agent-Me can retrieve and reason over reviewable personal knowledge. The longer-term goal is an AI Twin that can continuously learn from a person's:
+The main product path is:
 
-- knowledge and projects;
-- conversations and decisions;
-- preferences and experiences; and
-- relationships between people, events, and ideas;
+1. **Extract and own:** open-source connectors and portable, reviewable trace packs.
+2. **Optionally sell:** contributors can submit selected trace packs, receive a priced proposal, and respond through a private receipt; final purchasing and payment flows remain to be built.
+3. **Measure and optimize:** evaluate the user's stack and improve prompts and skills with GEPA. A local proposal-and-comparison flow exists; stronger task replay and stack integration remain planned.
+4. **Build a harness:** package the tools, context, policies, and evaluation cases needed for the user's work.
+5. **Train a smaller model:** curate suitable examples, train or adapt a model, and compare it on tasks held out from training.
+6. **Deliver and improve:** return usable artifacts, measurements, and provenance that the owner can export and run.
 
-while preserving provenance, uncertainty, privacy, inspectability, and user control.
-
-The roadmap develops that goal in explicit, reviewable layers:
-
-1. **Inspectable foundation — current:** personal knowledge retrieval, typed agent roles, evidence gates, public traces, and deterministic evaluation.
-2. **Structured identity and memory:** typed records for people, projects, preferences, decisions, events, and their sources.
-3. **Continuous learning:** consent-based ingestion, deduplication, temporal updates, conflict handling, confidence, and forgetting.
-4. **Contextual agency:** typed intent routing, bounded tool use, and actions that remain attributable and reviewable.
-5. **Longitudinal evaluation:** measure whether the twin stays faithful, current, useful, private, and under its owner's control over time.
-
-See the full [AI Twin roadmap](ROADMAP.md), including current boundaries, design principles, proposed workstreams, and contribution opportunities.
-
-**The goal is not to create a chatbot that sounds like you.**
-
-**The goal is to explore what it takes to build a digital representation that can increasingly think with your context.**
+See the [product vision](docs/PRODUCT_VISION.md), [implementation roadmap](ROADMAP.md), and [current GEPA workflow](docs/OPTIMIZATION.md). Planned capabilities are not release promises.
 
 ## Security and trust
 
@@ -318,7 +318,8 @@ Read [Trust, Data Flow, and Deployment Boundaries](docs/TRUST.md) before adding 
 
 | Guide | Covers |
 | --- | --- |
-| [AI Twin roadmap](ROADMAP.md) | Continuous learning, structured memory, tools, evaluation, and owner control |
+| [Product vision](docs/PRODUCT_VISION.md) | Trace ownership, optional data sales, stack optimization, harnesses, and smaller models |
+| [Roadmap](ROADMAP.md) | Product priorities, current boundaries, and supporting AI Twin work |
 | [Architecture](docs/ARCHITECTURE.md) | Components, contracts, request paths, and limitations |
 | [API reference](docs/API.md) | Endpoints, schemas, examples, and error behavior |
 | [Trust model](docs/TRUST.md) | Local/provider data flow, persistence, verification, and deployment boundaries |
@@ -350,3 +351,7 @@ to the user.
 ## Private AI Twin workspace
 
 Build a local profile, persist conversations, and confirm editable long-term memories. Personal mode is opt-in and token-protected; public chat never reads the private workspace. See the [English and Chinese setup guide](docs/PERSONAL.md).
+
+## Use Agent-Me from your agent
+
+The [local Agent-Me MCP](docs/MCP.md) reuses the website’s extractors and reviewed export format. A compatible agent can discover and extract chosen histories, help review records, prepare selected exports, calculate an experimental value estimate, run local GEPA, and submit a confirmed selection to the configured review service. See `/mcp` in the local site for setup and [the researched draft rate card](docs/TRACE_PRICING.md) for its assumptions. Public hosting remains disabled.

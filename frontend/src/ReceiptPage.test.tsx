@@ -1,0 +1,64 @@
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { ReceiptPage } from "./ReceiptPage";
+import { SubmitPage } from "./SubmitPage";
+import type { SubmissionDetail } from "./marketApi";
+import type { TracePack } from "./traceTypes";
+const api = vi.hoisted(() => ({ getSubmission: vi.fn(), marketStatus: vi.fn(), submitPack: vi.fn(), parseTracePack: vi.fn() }));
+vi.mock("./marketApi", async importOriginal => ({ ...await importOriginal<typeof import("./marketApi")>(), getSubmission: api.getSubmission, marketStatus: api.marketStatus, submitPack: api.submitPack }));
+vi.mock("./tracePack", () => ({ MAX_TRACE_PACK_BYTES: 25 * 1024 * 1024, parseTracePack: api.parseTracePack }));
+const receiptCode = "c".repeat(43);
+const detail: SubmissionDetail = { id: "receipt-123", title: "Reviewed traces", contributor_alias: "", status: "submitted", created_at: "2026-10-25T12:00:00Z", updated_at: "2026-10-25T12:00:00Z", pack_sha256: "a".repeat(64), event_count: 1, conversation_count: 1, sources: { codex: 1 }, requested_uses: ["evaluation"], offers: [], current_offer: null, payment_status: "not_started", contributor_note: "" };
+beforeEach(() => { vi.clearAllMocks(); window.history.replaceState(null, "", "/submissions"); api.getSubmission.mockResolvedValue(detail); api.marketStatus.mockResolvedValue({ enabled: true }); });
+afterEach(() => { cleanup(); vi.restoreAllMocks(); window.history.replaceState(null, "", "/"); });
+it("loads a receipt locally and sends its code only when explicitly opening the submission", async () => {
+  const persistence = vi.spyOn(Storage.prototype, "setItem");
+  render(<ReceiptPage />);
+  fireEvent.change(screen.getByLabelText("Load private receipt file"), { target: { files: [new File([JSON.stringify({ schema: "agent-me.submission-receipt.v1", submission_id: detail.id, access_token: receiptCode })], "receipt.json")] } });
+  await screen.findByDisplayValue(detail.id);
+  expect(screen.getByLabelText("Private receipt code")).toHaveValue(receiptCode);
+  expect(api.getSubmission).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Open submission" }));
+  await screen.findByText("Reviewed traces");
+  expect(api.getSubmission).toHaveBeenCalledWith(detail.id, receiptCode, expect.any(AbortSignal));
+  expect(window.location.href).not.toContain(receiptCode);
+  expect(persistence).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Close private receipt" }));
+  expect(screen.getByLabelText("Private receipt code")).toHaveValue("");
+  expect(screen.queryByText("Reviewed traces")).not.toBeInTheDocument();
+});
+it("rejects a activity export selected as a receipt without contacting the server", async () => {
+  render(<ReceiptPage />);
+  fireEvent.change(screen.getByLabelText("Load private receipt file"), { target: { files: [new File([JSON.stringify({ schema: "agent-me.trace-pack.v1" })], "pack.json")] } });
+  expect(await screen.findByRole("alert")).toHaveTextContent("Choose an Agent-Me private receipt");
+  expect(api.getSubmission).not.toHaveBeenCalled();
+});
+it("rejects personal exports at the submit page before upload", async () => {
+  api.parseTracePack.mockResolvedValue({ intent: "personal_export", offer: null });
+  render(<SubmitPage />);
+  fireEvent.change(screen.getByLabelText("Open activity export"), { target: { files: [new File(["{}"], "personal.json")] } });
+  expect(await screen.findByRole("alert")).toHaveTextContent("This is a personal export");
+  expect(api.submitPack).not.toHaveBeenCalled();
+  expect(api.marketStatus).not.toHaveBeenCalled();
+});
+it("opens a verified sale-offer pack locally for final confirmation", async () => {
+  const pack = { schema: "agent-me.trace-pack.v1", id: "pack1", intent: "sale_offer", offer: { requested_uses: ["evaluation"], note: "" }, selection: { events: 1, conversations: 1, sources: { codex: 1 } }, events: [], integrity: { sha256: "a".repeat(64) } } as unknown as TracePack;
+  api.parseTracePack.mockResolvedValue(pack);
+  render(<SubmitPage />);
+  fireEvent.change(screen.getByLabelText("Open activity export"), { target: { files: [new File(["{}"], "offer.json")] } });
+  await screen.findByRole("heading", { name: "Submit your selected activity" });
+  expect(api.parseTracePack).toHaveBeenCalledWith({});
+  expect(api.submitPack).not.toHaveBeenCalled();
+});
+it("ignores a receipt lookup result after leaving the page", async () => {
+  let finish!: (result: SubmissionDetail) => void;
+  api.getSubmission.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+  const { unmount } = render(<ReceiptPage submissionId={detail.id} />);
+  fireEvent.change(screen.getByLabelText("Private receipt code"), { target: { value: receiptCode } });
+  fireEvent.click(screen.getByRole("button", { name: "Open submission" }));
+  const signal = api.getSubmission.mock.calls[0][2] as AbortSignal;
+  unmount();
+  expect(signal.aborted).toBe(true);
+  await act(async () => { finish(detail); });
+  expect(screen.queryByText("Reviewed traces")).not.toBeInTheDocument();
+});

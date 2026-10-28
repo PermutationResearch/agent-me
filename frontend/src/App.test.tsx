@@ -43,7 +43,7 @@ function routeFetch(chatResponse: object) {
 
 beforeEach(() => {
   window.localStorage.clear();
-  window.history.replaceState(null, "", "/");
+  window.history.replaceState(null, "", "/workspace");
   document.documentElement.lang = "en";
   document.title = "Agent-Me | An inspectable AI Twin";
   let description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
@@ -320,24 +320,24 @@ it("selects standard Q&A when no workflow parameter is present", () => {
 it("selects the workflow from a direct link and falls back for invalid values", () => {
   vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => undefined)));
 
-  window.history.replaceState(null, "", "/?workflow=collaboration");
+  window.history.replaceState(null, "", "/workspace?workflow=collaboration");
   const { unmount } = render(<App />);
   expect(screen.getByRole("radio", { name: "Role-based multi-agent" })).toBeChecked();
   unmount();
 
-  window.history.replaceState(null, "", "/?workflow=verified");
+  window.history.replaceState(null, "", "/workspace?workflow=verified");
   const verified = render(<App />);
   expect(screen.getByRole("radio", { name: "Verified multi-agent" })).toBeChecked();
   verified.unmount();
 
-  window.history.replaceState(null, "", "/?workflow=not-a-real-mode");
+  window.history.replaceState(null, "", "/workspace?workflow=not-a-real-mode");
   render(<App />);
   expect(screen.getByRole("radio", { name: "Standard Q&A" })).toBeChecked();
 });
 
 it("updates the URL when the workflow changes without reloading and keeps unrelated params", async () => {
   vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => undefined)));
-  window.history.replaceState(null, "", "/?foo=bar");
+  window.history.replaceState(null, "", "/workspace?foo=bar");
 
   render(<App />);
   await userEvent.click(screen.getByRole("radio", { name: "Verified multi-agent" }));
@@ -355,13 +355,13 @@ it("updates the selected workflow on browser back and forward navigation", async
   await userEvent.click(screen.getByRole("radio", { name: "Role-based multi-agent" }));
   expect(screen.getByRole("radio", { name: "Role-based multi-agent" })).toBeChecked();
 
-  window.history.replaceState(null, "", "/?workflow=verified");
+  window.history.replaceState(null, "", "/workspace?workflow=verified");
   window.dispatchEvent(new PopStateEvent("popstate"));
   await waitFor(() =>
     expect(screen.getByRole("radio", { name: "Verified multi-agent" })).toBeChecked(),
   );
 
-  window.history.replaceState(null, "", "/");
+  window.history.replaceState(null, "", "/workspace");
   window.dispatchEvent(new PopStateEvent("popstate"));
   await waitFor(() =>
     expect(screen.getByRole("radio", { name: "Standard Q&A" })).toBeChecked(),

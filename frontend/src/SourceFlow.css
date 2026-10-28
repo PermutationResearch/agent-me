@@ -1,0 +1,27 @@
+.source-flow { display: grid; grid-template-columns: .9fr 1.1fr; gap: 70px; align-items: center; padding: 66px 0 60px; border-top: 1px solid #e0e6d9; }
+.market-shell .source-flow h2 { font-size: clamp(33px,3.6vw,47px); color: #1c2819; font-weight: 450; line-height: 1.1; letter-spacing: -.045em; }
+.market-shell .source-flow-copy>p:not(.home-eyebrow) { margin-top: 21px; max-width: 350px; color: #6c7862; font-size: 13px; line-height: 1.8; }
+.source-flow-copy .home-text-link { margin-top: 14px; }
+.source-flow-diagram { min-width: 0; padding: 0 30px; }
+.source-flow-legend { display: flex; justify-content: space-between; color: #6e7e61; font-size: 10px; margin-bottom: -18px; }
+.source-flow-label { font-size: 11px; font-weight: 500; color: #51683f; letter-spacing: -.02em; }
+.source-flow-hub { color: #314c1d; font-size: 34px; font-weight: 500; letter-spacing: -.05em; }
+.home-beam .zb-node { box-shadow: 0 2px 5px #263b1810,0 12px 20px -16px #263b1840; border-color: #dce5d2; background: #fff; }
+.home-beam .zb-node:hover { border-color: #a7bf85; box-shadow: 0 2px 5px #263b1810,0 0 0 4px #c6dbac26; }
+.home-beam .zb-hub { background: #d7e7bd; border-color: #c1d6a3; box-shadow: 0 0 0 6px #ecf3e0,0 12px 30px -20px #6c8a45; }
+.home-beam .zb-hub:hover { border-color: #c1d6a3; box-shadow: 0 0 0 6px #ecf3e0; }
+.home-beam .zb-halo { opacity: .22; }
+.market-shell .source-flow-disclaimer { color: #738267; font-size: 10px; line-height: 1.75; margin-top: -14px; max-width: 430px; }
+@media(max-width:900px) { .source-flow { gap: 35px; }.source-flow-diagram { padding-inline: 5px; } }
+@media(max-width:650px) { .source-flow { grid-template-columns: minmax(0,1fr); gap: 26px; padding: 35px 0 42px; }.market-shell .source-flow h2 { font-size: 35px; }.source-flow-diagram { padding-inline: 10px; }.source-flow-copy>p { max-width: none; }.source-flow-legend { margin-bottom: -12px; }.market-shell .source-flow-disclaimer { margin-top: -6px; }.source-flow-label { font-size: 9px; } }
+
+/* The shared Agent-Me identity now uses paper, graphite and orange. */
+.source-flow { padding-block: 85px; gap: 65px; border: 0; }
+.market-shell .source-flow h2 { color: #242a2d; font-size: 48px; font-weight: 500; letter-spacing: -.05em; }
+.market-shell .source-flow-copy>p:not(.home-eyebrow) { color: #7a8273; font-size: 14px; }
+.source-flow-legend,.source-flow-label { color: #7c8475; }
+.source-flow-hub { color: #fff; }
+.home-beam .zb-node { border-color: #d7dbcf; background: #f8f8f4; box-shadow: 0 3px 10px #343c2010; }
+.home-beam .zb-hub,.home-beam .zb-hub:hover { background: #f47b43; border-color: #f47b43; box-shadow: 0 0 0 6px #e5e8dd,0 12px 30px -20px #343c2033; }
+.market-shell .source-flow-disclaimer { color: #8b9381; }
+@media(max-width:650px) { .source-flow { padding-block: 55px; gap: 30px; }.market-shell .source-flow h2 { font-size: 38px; } }

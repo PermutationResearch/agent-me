@@ -1,0 +1,31 @@
+{
+  "name": "agent-me",
+  "account_id": "5a9d50b6258388524cd578176ec6263c",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-10-25",
+  "workers_dev": false,
+  "preview_urls": false,
+  "build": { "command": "VITE_PUBLIC_MARKET=true npm --prefix frontend run build" },
+  "assets": {
+    "directory": "./frontend/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/health", "/ready", "/docs*", "/redoc*", "/openapi.json"]
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "agent-me-submissions",
+    "database_id": "47b6073f-8dbd-44ff-8024-1cc1e83d8a3e",
+    "migrations_dir": "cloudflare/migrations"
+  }],
+  "ratelimits": [{
+    "name": "SUBMISSION_RATE_LIMITER",
+    "namespace_id": "1025202601",
+    "simple": { "limit": 20, "period": 60 }
+  }],
+  "vars": {
+    "TRACE_SUBMISSIONS_ENABLED": "false",
+    "TRACE_SUBMISSION_STORAGE_LIMIT_BYTES": "268435456"
+  },
+  "observability": { "enabled": false }
+}

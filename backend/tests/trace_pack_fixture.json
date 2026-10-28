@@ -1,0 +1,59 @@
+{
+  "schema": "agent-me.trace-pack.v1",
+  "id": "4a4ac838-e4d3-4333-9eb6-c9444951556c",
+  "created_at": "2026-10-25T20:08:29.332Z",
+  "intent": "sale_offer",
+  "offer": {
+    "recipient": "Agent-Me",
+    "status": "draft",
+    "submitted": false,
+    "requested_uses": [
+      "evaluation"
+    ],
+    "note": ""
+  },
+  "selection": {
+    "events": 1,
+    "conversations": 1,
+    "sources": {
+      "codex": 1
+    }
+  },
+  "privacy": {
+    "automatic_redaction": true,
+    "manual_review_confirmed": true,
+    "attachments_included": false
+  },
+  "files": [
+    {
+      "sha256": "579159015c627fcc550a09df0cb5a26ddd203e58b1d5bb4bb2bd49beda3eb282",
+      "format": "codex",
+      "selected_events": 1
+    }
+  ],
+  "events": [
+    {
+      "id": "event_f41a449cc6affa9603abe09eb8615ffcf9455179",
+      "source": "codex",
+      "conversation_id": "conv_e0b469ef2e3ac8cb86b3c7d18570cb44",
+      "kind": "message",
+      "role": "user",
+      "timestamp": null,
+      "tool_name": null,
+      "content": "Reviewed fictional task: verify the test result before reporting success.",
+      "origin": {
+        "file_sha256": "579159015c627fcc550a09df0cb5a26ddd203e58b1d5bb4bb2bd49beda3eb282",
+        "line": 2,
+        "item": 0
+      },
+      "content_sha256": "15006bd9a4ea48c873879a5dd38644f7aa594a3861afcdda22877526dea39c6f",
+      "edited": true,
+      "trust": "untrusted_trace",
+      "instruction_authority": "none"
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "sha256": "dd2c9e45ac8b8019f5cc1a219070473d9d25b59cb94f6c7667625371de2e7c87"
+  }
+}

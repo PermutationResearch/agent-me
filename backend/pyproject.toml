@@ -15,7 +15,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+optimize = ["gepa==0.1.4; python_version < '3.15'"]
 dev = [
+  "gepa==0.1.4; python_version < '3.15'",
   "pytest>=9.0.3,<10",
   "pytest-asyncio>=1.2,<2",
   "ruff>=0.8,<1",

@@ -104,6 +104,7 @@ it("does not cause extra requests or storage writes when imported in the full ap
   const fetchMock = vi.fn().mockRejectedValue(new Error("offline"));
   vi.stubGlobal("fetch", fetchMock);
   const storage = vi.spyOn(Storage.prototype, "setItem");
+  window.history.replaceState(null, "", "/workspace");
   render(<App />);
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1)); // Existing profile load only.
   fetchMock.mockClear();

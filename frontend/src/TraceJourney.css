@@ -1,0 +1,55 @@
+.trace-journey { padding-block: 100px 90px; border-top: 1px solid #dfe4d9; scroll-margin-top: 105px; }
+.trace-journey-steps { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 28px; margin-top: 50px; }
+.market-shell .trace-journey-steps button { position: relative; display: flex; align-items: flex-start; gap: 12px; min-height: 178px; padding: 24px 0 22px; border: 0; border-top: 2px solid #dce2d5; border-radius: 0; color: #697364; background: transparent; text-align: left; font-weight: 400; }
+.market-shell .trace-journey-steps button[aria-pressed="true"] { border-color: #486b36; color: #20331a; }
+.market-shell .trace-journey-steps button:hover { background: transparent; color: #20331a; border-color: #8b9f7d; }
+.trace-journey-number { font-size: 12px; padding-top: 3px; }
+.trace-journey-steps strong { display: block; font-size: 18px; font-weight: 500; letter-spacing: -.035em; }
+.trace-journey-steps button>span:nth-child(2)>span { display: block; margin-top: 12px; color: #697364; font-size: 13px; line-height: 1.8; }
+.trace-journey-arrow { margin-left: auto; font-size: 18px; }
+.trace-journey-panel { display: grid; grid-template-columns: .9fr 1.1fr; gap: 80px; align-items: center; padding: 50px 55px; margin-top: 12px; border-radius: 24px; background: #eaf0e3; }
+.trace-journey-label { color: #5c7250; font-size: 11px; }
+.market-shell .trace-journey-panel h3 { margin-top: 17px; color: #263b21; font-size: 29px; font-weight: 450; line-height: 1.2; letter-spacing: -.04em; max-width: 310px; }
+.market-shell .trace-journey-panel-copy>p { max-width: 310px; margin-top: 17px; color: #62715b; font-size: 13px; line-height: 1.8; }
+.trace-journey-panel-copy .home-text-link { margin-top: 14px; }
+.trace-journey-visual { min-width: 0; background: #fff; border-radius: 14px; box-shadow: 0 20px 45px -25px #2c442b36,0 2px 6px #2c442b06; }
+.trace-journey-visual-bar { display: flex; align-items: center; gap: 8px; padding: 13px 18px; border-bottom: 1px solid #edf0e8; color: #5d6a56; font-size: 10px; }
+.trace-journey-visual-bar>span:last-child { margin-left: auto; color: #788570; font-size: 9px; }
+.trace-journey-app-icon { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; color: #365325; background: #c9de9d; font-size: 12px; }
+.trace-journey-selection,.trace-journey-receipt,.trace-journey-offer { padding: 25px; min-height: 245px; }
+.trace-journey-micro { display: block; color: #68775e; font-size: 10px; margin-bottom: 17px; }
+.trace-journey-selection>div { display: flex; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid #edf1e7; font-size: 11px; color: #52634a; }
+.trace-journey-selection>div>span:last-child { margin-left: auto; font-size: 9px; color: #748467; }
+.trace-journey-tick { color: #5a7b3d; }
+.trace-journey-excluded { opacity: .65; }
+.market-shell .trace-journey-visual p { color: #7a8671; font-size: 10px; margin-top: 18px; }
+.trace-journey-receipt { text-align: center; }
+.trace-journey-receipt-symbol { display: grid; place-items: center; width: 38px; height: 38px; margin: 0 auto 12px; border-radius: 50%; background: #ecf4df; color: #4c6c32; }
+.trace-journey-receipt>strong { display: block; color: #35462c; font-size: 17px; font-weight: 500; }
+.trace-journey-receipt>span { display: block; color: #7a8671; font-size: 10px; margin-top: 5px; }
+.trace-journey-receipt>div:not(.trace-journey-receipt-symbol) { display: flex; justify-content: space-between; gap: 12px; margin-top: 23px; padding-top: 13px; border-top: 1px solid #e9eee2; font-size: 9px; color: #6d7b62; }
+.trace-journey-receipt>div>strong { font-size: 9px; font-weight: 500; }
+.trace-journey-offer>strong { display: block; font-size: 23px; font-weight: 450; line-height: 1.2; letter-spacing: -.04em; color: #304b24; margin-bottom: 22px; }
+.trace-journey-offer>div { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid #eef1e9; color: #68775e; font-size: 10px; }
+@media(max-width:750px) { .trace-journey { padding-block: 65px; }.trace-journey-steps { gap: 17px; margin-top: 30px; }.trace-journey-steps strong { font-size: 15px; }.trace-journey-steps button>span:nth-child(2)>span { font-size: 12px; }.trace-journey-panel { gap: 30px; padding: 34px; }.market-shell .trace-journey-panel h3 { font-size: 25px; }.trace-journey-arrow { display: none; } }
+@media(max-width:550px) { .trace-journey-steps { grid-template-columns: 1fr; gap: 0; }.market-shell .trace-journey-steps button { min-height: 0; padding-block: 17px; gap: 16px; }.trace-journey-steps button>span:nth-child(2)>span { margin-top: 6px; }.trace-journey-panel { grid-template-columns: 1fr; gap: 25px; padding: 28px 20px; margin-top: 20px; }.trace-journey-panel-copy { padding-inline: 4px; }.trace-journey-visual-bar { padding-inline: 13px; }.trace-journey-selection,.trace-journey-receipt,.trace-journey-offer { padding: 20px; } }
+/* Full-width illustrated workflow stage, matching the reference's dark product chapter. */
+.trace-journey { padding-block: 90px; border: 0; }
+.market-shell .trace-journey .home-section-heading h2 { color: #fff; font-size: clamp(38px,4vw,50px); font-weight: 500; letter-spacing: -.05em; }
+.market-shell .trace-journey .home-section-heading h2 em { font-family: inherit; font-style: normal; font-weight: 500; }
+.market-shell .trace-journey .home-section-heading>p,.market-shell .trace-journey .home-eyebrow { color: #ffffff8c; }
+.market-shell .trace-journey-steps button { color: #ffffff80; border-color: #ffffff24; }
+.market-shell .trace-journey-steps button[aria-pressed="true"],.market-shell .trace-journey-steps button:hover { color: #fff; border-color: #ffffffb3; }
+.trace-journey-steps button>span:nth-child(2)>span { color: #ffffff80; }
+.trace-journey-panel { gap: 70px; padding: 45px; border: 1px solid #ffffff24; border-radius: 24px; background: #ffffff0a; backdrop-filter: blur(15px); }
+.trace-journey-label { color: #ffffff70; }
+.market-shell .trace-journey-panel h3 { color: #fff; font-size: 32px; }
+.market-shell .trace-journey-panel-copy>p { color: #ffffff8c; }
+.market-shell .trace-journey .home-text-link { color: #fff; }
+.trace-journey-visual { box-shadow: 0 20px 40px #0003; }
+.trace-journey-app-icon { color: #fff; background: #f47b43; }
+.trace-journey-tick { color: #676e64; }
+.trace-journey-visual-bar,.trace-journey-selection>div { color: #656d60; }
+.trace-journey-selection,.trace-journey-receipt,.trace-journey-offer { color: #4a5148; }
+.trace-journey-receipt-symbol { color: #51594c; background: #efefeb; }
+@media(max-width:650px) { .trace-journey { padding-block: 65px; }.trace-journey-panel { padding: 28px 20px; gap: 25px; }.market-shell .trace-journey-panel h3 { font-size: 29px; } }

@@ -1,7 +1,12 @@
 # Deployment
 
-Read [Trust, Data Flow, and Deployment Boundaries](TRUST.md) before deploying. The included stack is
-a reproducible local reference environment, not a production-ready hosted platform.
+The public hosting configuration is prepared for Cloudflare Workers and D1,
+but public routing is currently disabled at the owner’s request. The approved
+runtime is `http://localhost:5181/`. See [Public launch](PUBLIC_LAUNCH.md) for its deployment, limits,
+private reviewer access, persistence, and verification.
+
+Read [Trust, Data Flow, and Deployment Boundaries](TRUST.md) before self-hosting.
+The Compose stack below remains a local reference environment.
 
 1. Copy `.env.example` into a secret-managed environment configuration.
 2. Set exact `CORS_ORIGINS`; do not use a wildcard for credentialed applications.

@@ -1,0 +1,88 @@
+.possibilities-section { overflow: hidden; padding: 90px 0 70px; scroll-margin-top: 80px; background: #f4f4f1; color: #181c22; }
+.possibilities-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; width: min(1200px,calc(100% - 80px)); margin: 0 auto 42px; }
+.market-shell .possibilities-heading h2 { color: #181c22; font-size: clamp(38px,4.4vw,56px); font-weight: 500; line-height: 1.04; letter-spacing: -.055em; }
+.possibilities-rail-controls { display: flex; flex-shrink: 0; gap: 7px; padding-bottom: 5px; }
+.market-shell .possibilities-rail-controls button { display: grid; place-items: center; width: 44px; height: 44px; min-height: 44px; border: 0; border-radius: 50%; color: #252a2c; background: #e7e8e2; font-size: 20px; font-weight: 400; }
+.market-shell .possibilities-rail-controls button:disabled { color: #b9bcb1; background: #eeeee8; }
+.possibilities-feature-rail { display: flex; gap: 20px; overflow-x: auto; padding: 0 max(40px,calc((100vw - 1200px)/2)) 35px; scroll-snap-type: x mandatory; scroll-padding-inline: max(40px,calc((100vw - 1200px)/2)); scrollbar-width: none; }
+.possibilities-feature-rail::-webkit-scrollbar { display: none; }
+.market-shell .possibilities-feature-card { position: relative; isolation: isolate; display: flex; flex-direction: column; flex: 0 0 360px; min-height: 560px; padding: 0; overflow: hidden; border: 1px solid #ffffff26; border-radius: 25px; color: #fff; --feature-sky: #14243e; background: var(--feature-sky); text-align: left; scroll-snap-align: start; box-shadow: 0 18px 35px -22px #0a16204d; transition: transform 180ms,box-shadow 180ms; }
+.market-shell .possibilities-feature-card:hover { background: var(--feature-sky); border-color: #ffffff90; color: #fff; transform: translateY(-4px); box-shadow: 0 23px 40px -20px #0a162060; }
+.market-shell .possibilities-feature-card[aria-pressed="true"] { border-color: #ffffffa6; }
+.possibilities-feature-card::before { content: ""; position: absolute; z-index: -2; inset: 0; background: url("/images/trace-city.webp") 68% 55% / auto 100%; opacity: .68; mix-blend-mode: luminosity; }
+.possibilities-feature-card::after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(180deg,#172a4b00 0%,#09142688 54%,#0a1122 100%); }
+.market-shell .possibilities-feature-optimize { --feature-sky: #d5b443; background: var(--feature-sky); }
+.possibilities-feature-optimize::after { background: linear-gradient(180deg,#f4cf4b00,#6a4c18a6 65%,#463614); }
+.market-shell .possibilities-feature-evaluate { --feature-sky: #d2754a; background: var(--feature-sky); }
+.possibilities-feature-evaluate::after { background: linear-gradient(180deg,#e9a17000,#6d3016b3 65%,#4a2611); }
+.market-shell .possibilities-feature-models { --feature-sky: #9f788a; background: var(--feature-sky); }
+.possibilities-feature-models::after { background: linear-gradient(180deg,#d699ba00,#50344b99 65%,#352331); }
+.possibilities-feature-scene { position: relative; display: grid; place-items: center; width: 100%; min-height: 325px; padding: 40px 22px 22px; }
+.possibilities-example-label { position: absolute; top: 18px; right: 18px; color: #ffffffc4; font-size: 8px; }
+.possibilities-feature-copy { margin-top: auto; padding: 15px 24px 24px; }
+.market-shell .possibilities-feature-copy h3 { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 21px; font-weight: 600; letter-spacing: -.04em; line-height: 1.2; }
+.possibilities-feature-copy h3>span { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #ffffff2e; border-radius: 7px; background: #ffffff13; font-size: 16px; font-weight: 400; }
+.market-shell .possibilities-feature-copy>p { color: #ffffffa8; margin-top: 15px; font-size: 14px; line-height: 1.5; font-weight: 400; }
+.possibilities-card-description { display: block; margin-top: 7px; color: #ffffffe3; font-size: 14px; line-height: 1.6; font-weight: 400; }
+.possibilities-feature-action { display: flex; justify-content: space-between; margin-top: 24px; color: #ffffffb0; font-size: 11px; font-weight: 400; }
+.possibilities-detail { display: grid; grid-template-columns: 1fr 1.2fr; gap: 70px; width: min(1120px,calc(100% - 64px)); margin: 10px auto 0; padding: 30px 0; border-top: 1px solid #dfe1d7; }
+.market-shell .possibilities-availability { color: #979c90; font-size: 10px; }
+.market-shell .possibilities-detail h3 { margin-top: 12px; max-width: 400px; color: #343a3c; font-size: 28px; font-weight: 500; line-height: 1.15; letter-spacing: -.04em; }
+.market-shell .possibilities-description { color: #747b70; font-size: 14px; line-height: 1.75; }
+.market-shell .possibilities-cta { display: inline-flex; gap: 18px; align-items: center; padding-block: 13px; margin-top: 8px; color: #343a3c; font-size: 13px; font-weight: 500; }
+.possibilities-cta:hover { text-decoration: underline; text-underline-offset: 5px; }
+.market-shell .possibilities-note { color: #8c9484; font-size: 11px; line-height: 1.7; margin-top: 10px; }
+.possibilities-sale,.possibilities-prompt,.possibilities-evaluation,.possibilities-model { width: min(100%,380px); }
+.possibilities-mini-window { background: #fff; border: 1px solid #dce5d5; border-radius: 11px; box-shadow: 0 14px 35px -18px #52654d40; overflow: hidden; transform: rotate(-2deg); }
+.possibilities-window-bar { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #e9ede4; padding: 12px 15px; font-size: 10px; color: #6f7a68; }
+.possibilities-window-bar > span:last-child { margin-left: auto; color: #9aa48f; font-size: 9px; }
+.possibilities-window-dot { width: 5px; height: 5px; background: #a2b885; border-radius: 50%; }
+.possibilities-mini-record { display: flex; gap: 11px; align-items: center; padding: 14px 17px; }
+.possibilities-mini-record + .possibilities-mini-record { border-top: 1px solid #f0f2ed; }
+.possibilities-mini-check { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 4px; background: #dfeccc; color: #5d7746; font-size: 10px; flex-shrink: 0; }
+.possibilities-mini-record b { display: block; color: #526349; font-size: 10px; font-weight: 500; }
+.possibilities-mini-record div > span { display: block; margin-top: 4px; color: #88927f; font-size: 9px; }
+.possibilities-mini-excluded { opacity: .5; }
+.possibilities-mini-excluded .possibilities-mini-check { border: 1px solid #bdc7b2; background: transparent; }
+.possibilities-review-slip { position: relative; display: flex; align-items: center; gap: 11px; width: calc(100% - 30px); margin: 15px 0 0 30px; padding: 15px 17px; border: 1px solid #d2dec5; border-radius: 10px; background: #f8fbf2; box-shadow: 0 12px 25px -20px #415b2d50; transform: rotate(1.5deg); }
+.possibilities-slip-mark { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid #c8d8b5; border-radius: 7px; background: #dfebca; color: #5e7945; font-size: 19px; }
+.possibilities-review-slip b { display: block; font-size: 10px; color: #5c714c; font-weight: 500; }
+.possibilities-review-slip div > span { display: block; margin-top: 4px; font-size: 9px; color: #8b987d; }
+.possibilities-slip-arrow { margin-left: auto; color: #879e6c; font-size: 16px; }
+.possibilities-prompt-sheet { border: 1px solid #dbe3d1; border-radius: 10px; padding: 20px 23px; background: #fff; box-shadow: 0 16px 35px -23px #49603750; transform: rotate(-1deg); }
+.possibilities-mini-label { font-size: 9px; color: #8b977e; font-weight: 500; }
+.market-shell .possibilities-prompt-sheet p { margin: 9px 0 0; color: #6c7a5e; font-size: 12px; line-height: 1.8; letter-spacing: -.01em; }
+.possibilities-prompt-sheet em { color: #4e7642; font-style: normal; background: #edf5e3; }
+.possibilities-prompt-divider { display: flex; justify-content: space-between; border-block: 1px solid #edf1e8; padding: 8px 0; margin: 13px 0; color: #a2af91; font-size: 9px; }
+.possibilities-split-row { display: flex; gap: 5px; padding: 15px 12px 0; }
+.possibilities-split-row span { flex: 1; border: 1px solid #d4e1c6; padding: 7px 6px; border-radius: 5px; background: #f8fbf3; text-align: center; color: #7e916c; font-size: 9px; }
+.market-shell .possibilities-illustration-note { margin: 10px 0 0; color: #91a080; font-size: 9px; text-align: center; }
+.possibilities-evaluation { border: 1px solid #d8e2d6; border-radius: 12px; padding: 20px 23px; background: #fff; box-shadow: 0 18px 35px -24px #49624b50; transform: rotate(-1.5deg); }
+.possibilities-eval-heading { display: flex; justify-content: space-between; align-items: center; padding-bottom: 13px; border-bottom: 1px solid #edf0e8; }
+.possibilities-file-label { color: #a0aa98; font-size: 8px; font-family: ui-monospace,monospace; }
+.possibilities-case-line { display: grid; grid-template-columns: 55px 1fr; gap: 8px; padding-top: 18px; align-items: baseline; }
+.possibilities-case-line > span { color: #9aa78e; font-size: 9px; }
+.market-shell .possibilities-case-line p { margin: 0; color: #627757; font-size: 11px; line-height: 1.5; }
+.possibilities-case-footer { display: flex; align-items: center; gap: 10px; margin-top: 26px; padding-top: 16px; border-top: 1px solid #eaf0e4; font-size: 9px; color: #7b926d; }
+.possibilities-case-node { width: 7px; height: 7px; border: 1px solid #c4d5b5; border-radius: 2px; background: #e2edda; }
+.possibilities-case-footer i,.possibilities-model-path i { flex: 1; height: 1px; background: #dce6d0; }
+.possibilities-example-stack { position: relative; padding: 14px 15px 0 0; }
+.possibilities-example-stack > div:not(:last-child) { position: absolute; inset: 0 0 15px 15px; border: 1px solid #d8e2c7; border-radius: 11px; background: #f8faef; transform: rotate(4deg); }
+.possibilities-example-stack > div:nth-child(2) { inset: 7px 7px 7px 7px; background: #f9fbf3; transform: rotate(1.5deg); }
+.possibilities-example-front { position: relative; background: #fff; border: 1px solid #d6e1c7; border-radius: 11px; padding: 22px 24px; transform: rotate(-2deg); box-shadow: 0 16px 30px -23px #5c6b3b50; }
+.possibilities-example-front > div:not(:last-child) { display: grid; grid-template-columns: 50px 1fr; padding-top: 18px; gap: 9px; }
+.possibilities-example-front div > span { color: #a1ac90; font-size: 9px; }
+.possibilities-example-front b { color: #72875e; font-size: 10px; font-weight: 500; }
+.possibilities-example-rule { height: 5px; width: 55%; background: #edf1e2; border-radius: 5px; margin-top: 21px; }
+.possibilities-model-path { display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 0 14px; color: #90a078; font-size: 9px; }
+.possibilities-model-path b { color: #849863; font-weight: 400; }
+
+/* Miniature product scenes remain illustrative; the route below is the working action. */
+.possibilities-feature-scene .possibilities-mini-window,.possibilities-feature-scene .possibilities-prompt-sheet,.possibilities-feature-scene .possibilities-evaluation,.possibilities-feature-scene .possibilities-example-front { border-color: #ffffff80; background: #ffffffe0; backdrop-filter: blur(8px); }
+.possibilities-feature-scene .possibilities-review-slip { background: #ffffffe8; border-color: #ffffff75; }
+.possibilities-feature-scene .possibilities-mini-check,.possibilities-feature-scene .possibilities-slip-mark { color: #5e6560; background: #e9ece7; border-color: #d6dbd0; }
+.possibilities-feature-scene .possibilities-prompt-sheet em { font-family: inherit; font-style: normal; color: #5c614d; background: #edead0; }
+.possibilities-feature-scene .possibilities-split-row span { color: #5f624f; background: #ffffffe3; border-color: #ffffff75; }
+.possibilities-feature-scene .possibilities-model-path,.market-shell .possibilities-feature-scene .possibilities-illustration-note { color: #ffffffb8; }
+@media(max-width:650px) { .possibilities-section { padding-block: 60px 40px; }.possibilities-heading { width: calc(100% - 36px); margin-bottom: 30px; gap: 12px; }.market-shell .possibilities-heading h2 { font-size: 36px; }.possibilities-heading h2 br { display: none; }.possibilities-rail-controls { display: none; }.possibilities-feature-rail { gap: 14px; padding-inline: 18px; scroll-padding-inline: 18px; }.market-shell .possibilities-feature-card { flex-basis: 310px; min-height: 530px; border-radius: 23px; }.possibilities-feature-scene { min-height: 310px; padding-inline: 20px; }.possibilities-feature-copy { padding-inline: 22px; }.market-shell .possibilities-feature-copy h3 { font-size: 19px; }.possibilities-detail { grid-template-columns: 1fr; gap: 20px; width: calc(100% - 36px); padding-block: 25px; }.market-shell .possibilities-detail h3 { font-size: 27px; }.market-shell .possibilities-description { font-size: 13px; }.possibilities-mini-record { padding: 12px; }.possibilities-mini-record div>span { font-size: 8px; }.possibilities-review-slip { width: calc(100% - 10px); margin-left: 10px; padding-inline: 12px; }.possibilities-case-line { grid-template-columns: 50px 1fr; gap: 5px; }.market-shell .possibilities-case-line p { font-size: 10px; } }
+@media(prefers-reduced-motion:reduce) { .market-shell .possibilities-feature-card { transition: none; }.market-shell .possibilities-feature-card:hover { transform: none; } }

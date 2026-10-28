@@ -31,7 +31,7 @@ function mockRequests(run: (policy: CollaborationPolicy) => Promise<ReturnType<t
 
 beforeEach(() => {
   window.localStorage.clear();
-  window.history.replaceState(null, "", "/");
+  window.history.replaceState(null, "", "/workspace");
 });
 afterEach(() => {
   cleanup();

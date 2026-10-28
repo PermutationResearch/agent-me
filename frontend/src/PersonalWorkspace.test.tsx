@@ -4,6 +4,18 @@ import { PersonalWorkspace } from "./PersonalWorkspace";
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
+it("renders the private workspace in English", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify([]), { status: 200 })));
+  render(<PersonalWorkspace external={false} />);
+
+  expect(document.body.textContent).not.toMatch(/\p{Script=Han}/u);
+  fireEvent.change(screen.getByLabelText("Workspace token"), { target: { value: "synthetic-token" } });
+  fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+
+  expect(await screen.findByLabelText("Private question")).toBeInTheDocument();
+  expect(document.body.textContent).not.toMatch(/\p{Script=Han}/u);
+});
+
 it.each([[42, 42], [undefined, 8000], [12000, 8000]])("enforces configured limit %s with an effective boundary of %s", async (configured, limit) => {
   const fetcher = vi.fn(async () => new Response(JSON.stringify([]), { status: 200 }));
   vi.stubGlobal("fetch", fetcher);
@@ -15,7 +27,7 @@ it.each([[42, 42], [undefined, 8000], [12000, 8000]])("enforces configured limit
   const form = question.closest("form")!;
   fireEvent.change(question, { target: { value: "x".repeat(limit + 1) } });
   fireEvent.submit(form);
-  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher).toHaveBeenCalledTimes(5);
   expect(question).toHaveValue("x".repeat(limit + 1));
   fireEvent.change(question, { target: { value: "x".repeat(limit) } });
   fireEvent.submit(form);
@@ -35,7 +47,7 @@ it("preserves a draft when the limit shrinks and allows sending after shortening
   expect(question).toHaveValue("x".repeat(43));
   expect(screen.getByRole("button", { name: /Send/ })).toBeDisabled();
   fireEvent.submit(question.closest("form")!);
-  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher).toHaveBeenCalledTimes(5);
   fireEvent.change(question, { target: { value: "shortened question" } });
   expect(screen.getByRole("button", { name: /Send/ })).toBeEnabled();
   fireEvent.click(screen.getByRole("button", { name: /Send/ }));
@@ -86,12 +98,12 @@ it("identifies duplicate-key memory actions by accessible name and preserves the
   fireEvent.click(screen.getByRole("button", { name: /Unlock/ }));
   expect(await screen.findByText("River Example")).toBeInTheDocument();
 
-  const firstConfirm = screen.getByRole("button", { name: "确认 / Confirm: profile.alias, 记忆 1 / memory 1" });
-  const secondConfirm = screen.getByRole("button", { name: "确认 / Confirm: profile.alias, 记忆 2 / memory 2" });
-  const firstEdit = screen.getByRole("button", { name: "编辑 / Edit: profile.alias, 记忆 1 / memory 1" });
-  const secondEdit = screen.getByRole("button", { name: "编辑 / Edit: profile.alias, 记忆 2 / memory 2" });
-  const firstDelete = screen.getByRole("button", { name: "删除 / Delete: profile.alias, 记忆 1 / memory 1" });
-  const secondDelete = screen.getByRole("button", { name: "删除 / Delete: profile.alias, 记忆 2 / memory 2" });
+  const firstConfirm = screen.getByRole("button", { name: "Confirm: profile.alias, memory 1" });
+  const secondConfirm = screen.getByRole("button", { name: "Confirm: profile.alias, memory 2" });
+  const firstEdit = screen.getByRole("button", { name: "Edit: profile.alias, memory 1" });
+  const secondEdit = screen.getByRole("button", { name: "Edit: profile.alias, memory 2" });
+  const firstDelete = screen.getByRole("button", { name: "Delete: profile.alias, memory 1" });
+  const secondDelete = screen.getByRole("button", { name: "Delete: profile.alias, memory 2" });
 
   fireEvent.click(firstConfirm);
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith(expect.stringContaining("/entries/opaque-a/confirm"), expect.any(Object)));
@@ -108,4 +120,27 @@ it("identifies duplicate-key memory actions by accessible name and preserves the
   expect(screen.getByLabelText(/Content/)).toHaveValue("Sky Example");
   fireEvent.click(secondDelete);
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith(expect.stringContaining("/entries/opaque-b/delete"), expect.any(Object)));
+});
+
+it("shows a verified corpus and searches review-only owner evidence", async () => {
+  const fetcher = vi.fn(async (url: string) => {
+    if (url.endsWith("/corpus/status")) return new Response(JSON.stringify({
+      configured: true, verified: true, read_only: true, review_only: true, conversations: 5043,
+    }), { status: 200 });
+    if (url.endsWith("/corpus/search")) return new Response(JSON.stringify({ results: [{
+      evidence_id: "doc_1", source: "codex", timestamp: "2026-01-01", excerpt: "I verify focused changes.",
+      trust: "untrusted_corpus", author_role: "owner", review_only: true,
+    }] }), { status: 200 });
+    return new Response(JSON.stringify([]), { status: 200 });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(<PersonalWorkspace external={false} />);
+  fireEvent.change(screen.getByLabelText("Workspace token"), { target: { value: "synthetic-token" } });
+  fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+
+  expect(await screen.findByText("Verified · read only")).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Search historical evidence"), { target: { value: "verification" } });
+  fireEvent.click(screen.getByRole("button", { name: "Search" }));
+  expect(await screen.findByText("I verify focused changes.")).toBeInTheDocument();
+  expect(screen.getByText(/untrusted historical evidence/)).toBeInTheDocument();
 });

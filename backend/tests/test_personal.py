@@ -1,3 +1,6 @@
+import hashlib
+import json
+import sqlite3
 from pathlib import Path
 
 import httpx
@@ -5,6 +8,7 @@ import pytest
 
 from app.config import Settings, get_settings
 from app.main import app
+from app.corpus import CorpusIndex
 from app.personal import Entry, Store
 
 
@@ -28,6 +32,75 @@ async def personal(tmp_path):
 
 
 HEADERS = {"Authorization": "Bearer " + "t" * 40}
+
+
+def make_corpus(path: Path) -> str:
+    with sqlite3.connect(path) as db:
+        db.executescript(
+            """
+            CREATE TABLE metadata(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID;
+            CREATE TABLE conversations(
+                conversation_id TEXT PRIMARY KEY, source TEXT NOT NULL, title TEXT,
+                created_at TEXT, updated_at TEXT, event_count INTEGER NOT NULL,
+                provenance_json TEXT NOT NULL
+            ) WITHOUT ROWID;
+            CREATE TABLE documents(
+                document_id INTEGER PRIMARY KEY, conversation_id TEXT NOT NULL,
+                ordinal INTEGER NOT NULL, chunk_index INTEGER NOT NULL,
+                kind TEXT NOT NULL, role TEXT NOT NULL, timestamp TEXT,
+                tool_name TEXT, content_sha256 TEXT NOT NULL,
+                char_count INTEGER NOT NULL, excerpt TEXT NOT NULL
+            );
+            CREATE VIRTUAL TABLE document_fts USING fts5(
+                text, content='', detail=column, tokenize='unicode61 remove_diacritics 2'
+            );
+            """
+        )
+        metadata = {
+            "schema": "hsm.ai_corpus_semantic_index.v1",
+            "trust": "untrusted_corpus",
+            "read_only_intent": True,
+            "promotion_side_effects": False,
+            "document_scope": "owner_messages_only",
+            "counts": {"records": 1, "events": 2},
+            "sources": [
+                {
+                    "source": "normalized-jsonl",
+                    "embedded_sources": ["codex"],
+                }
+            ],
+        }
+        db.executemany(
+            "INSERT INTO metadata VALUES(?,?)",
+            [(key, json.dumps(value)) for key, value in metadata.items()],
+        )
+        db.execute(
+            "INSERT INTO conversations VALUES(?,?,?,?,?,?,?)",
+            ("conv_fixture", "codex", None, None, None, 2, "{}"),
+        )
+        for document_id, role, excerpt in (
+            (1, "user", "Owner prefers focused semantic verification."),
+            (2, "assistant", "Assistant claims a private identity secret."),
+        ):
+            db.execute(
+                "INSERT INTO documents VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    document_id,
+                    "conv_fixture",
+                    document_id,
+                    0,
+                    "message",
+                    role,
+                    "2026-01-01T00:00:00Z",
+                    None,
+                    hashlib.sha256(excerpt.encode()).hexdigest(),
+                    len(excerpt),
+                    excerpt,
+                ),
+            )
+            db.execute("INSERT INTO document_fts(rowid,text) VALUES(?,?)", (document_id, excerpt))
+    path.chmod(0o600)
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 async def test_auth_and_disabled(personal):
@@ -95,6 +168,19 @@ async def test_candidate_and_explicit_conflict(personal):
     assert len((await client.get(base + "/entries", headers=HEADERS)).json()) == 1
 
 
+async def test_richer_candidate_kinds_remain_pending(personal):
+    client, _ = personal
+    base = "/api/v1/personal/entries"
+    for kind in ("project", "skill", "working_pattern"):
+        response = await client.post(
+            base,
+            headers=HEADERS,
+            json={"kind": kind, "key": f"{kind}.example", "content": "Review me"},
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "pending"
+
+
 async def test_private_markdown_and_validation(personal):
     client, config = personal
     root = Path(config.personal_data_dir) / "knowledge"
@@ -154,3 +240,50 @@ async def test_private_provider_receives_only_current_confirmed_context(personal
     db.delete(approved["id"])
     await client.post("/api/v1/personal/chat", headers=HEADERS, json={"question": "paragraphs"})
     assert not captured[-1]["matches"]
+
+
+async def test_private_corpus_search_is_verified_owner_only_and_review_only(personal):
+    client, config = personal
+    corpus_path = Path(config.personal_data_dir).parent / "semantic.sqlite3"
+    config.personal_corpus_index = str(corpus_path)
+    config.personal_corpus_sha256 = make_corpus(corpus_path)
+
+    status = (await client.get("/api/v1/personal/corpus/status", headers=HEADERS)).json()
+    assert status["verified"] is True
+    assert status["read_only"] is True
+    assert status["review_only"] is True
+    assert status["promotion_performed"] is False
+    assert status["sources"] == ["codex"]
+
+    owner = await client.post(
+        "/api/v1/personal/corpus/search",
+        headers=HEADERS,
+        json={"query": "semantic verification"},
+    )
+    assert owner.status_code == 200
+    result = owner.json()["results"][0]
+    assert result["author_role"] == "owner"
+    assert result["instruction_authority"] == "none"
+    assert result["review_only"] is True
+    assert "Owner prefers" in result["excerpt"]
+
+    assistant = await client.post(
+        "/api/v1/personal/corpus/search",
+        headers=HEADERS,
+        json={"query": "identity secret"},
+    )
+    assert assistant.json()["results"] == []
+    # Opening/searching the immutable corpus does not create SQLite sidecars.
+    assert not corpus_path.with_suffix(".sqlite3-wal").exists()
+    assert not corpus_path.with_suffix(".sqlite3-shm").exists()
+
+
+async def test_private_corpus_fails_closed_on_digest_mismatch(personal):
+    client, config = personal
+    corpus_path = Path(config.personal_data_dir).parent / "semantic.sqlite3"
+    make_corpus(corpus_path)
+    config.personal_corpus_index = str(corpus_path)
+    config.personal_corpus_sha256 = "0" * 64
+    response = await client.get("/api/v1/personal/corpus/status", headers=HEADERS)
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Private corpus verification failed"

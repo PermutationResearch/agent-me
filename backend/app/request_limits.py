@@ -23,7 +23,11 @@ class RequestBodyLimitMiddleware:
             await self.app(scope, receive, send)
             return
 
-        max_bytes = self.settings.max_request_body_bytes
+        max_bytes = (
+            self.settings.max_trace_submission_body_bytes
+            if scope.get("method") == "POST" and scope.get("path") == "/api/v1/trace-submissions"
+            else self.settings.max_request_body_bytes
+        )
         content_length = Headers(scope=scope).get("content-length")
         if content_length is not None:
             try:
