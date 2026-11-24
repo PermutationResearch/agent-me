@@ -59,14 +59,14 @@ Agent 專案經常在 Agent 邏輯執行前就已失敗：語料庫掛載到錯�
 ```bash
 git clone https://github.com/<your-username>/agent-me.git
 cd agent-me
-git remote add upstream https://github.com/jzjzzzzzzz/agent-me.git
+git remote add upstream https://github.com/PermutationResearch/agent-me.git
 git switch -c learner/baseline
 ```
 
 如果只想閱讀與執行：
 
 ```bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 ```
 

@@ -331,3 +331,25 @@ def test_course_requires_visible_sections_and_accepts_subtitles(tmp_path, monkey
         "**Time:** 10 minutes\n\n## Exercises\n## Further reading: References\n", encoding="utf-8"
     )
     assert check_docs.validate_course() == []
+
+
+def test_github_links_use_this_repository_except_upstream_history(
+    tmp_path: Path, monkeypatch
+) -> None:
+    source = tmp_path / "source.md"
+    source.write_text(
+        "[issues](https://github.com/PermutationResearch/agent-me/issues)\n"
+        "[proposal](https://github.com/jzjzzzzzzz/agent-me/issues/169)\n"
+        "[delivery](https://github.com/jzjzzzzzzz/agent-me/pull/170)\n"
+        "[run](https://github.com/jzjzzzzzzz/agent-me/actions/runs/38032439586)\n"
+        "[related](https://github.com/jzjzzzzzzz/human-api)\n"
+        "[stale](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=bug.yml)\n"
+        "[clone](https://github.com/jzjzzzzzzz/agent-me)\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+
+    assert check_docs.validate_file(source) == [
+        "source.md: unexpected GitHub owner in https://github.com/jzjzzzzzzz/agent-me/issues/new",
+        "source.md: unexpected GitHub owner in https://github.com/jzjzzzzzzz/agent-me",
+    ]

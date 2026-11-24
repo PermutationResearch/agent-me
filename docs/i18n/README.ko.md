@@ -41,7 +41,7 @@ Agent-Me는 감사 가능한 역할 기반 멀티 에이전트 RAG 워크플로�
 Docker와 Compose 플러그인이 필요합니다.
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build

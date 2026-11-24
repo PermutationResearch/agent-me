@@ -41,7 +41,7 @@ O currículo explica e reconstrói a mesma arquitetura da implementação de ref
 É necessário ter Docker com o plugin Compose.
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build

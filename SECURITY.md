@@ -6,7 +6,7 @@ Security fixes target the latest release on `main`.
 
 ## Reporting a vulnerability
 
-Use the repository's **Security → Report a vulnerability** flow. Do not disclose exploitable details in a public issue. Include affected version, reproduction steps, impact, and a suggested fix if available.
+Private vulnerability reporting is not enabled for this repository. Open an issue titled "Security contact request" that names only the affected area, and a maintainer will arrange a private channel. Do not disclose exploitable details in a public issue. In the private report, include the affected version, reproduction steps, impact, and a suggested fix if available.
 
 Do not send real credentials or private user data in a report. Maintainers will acknowledge a complete report, investigate it, and coordinate a fix and disclosure.
 

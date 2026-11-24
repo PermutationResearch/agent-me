@@ -35,7 +35,7 @@
       <text x="399" y="38" fill="#9AABBC" font-size="19">→</text>
       <text x="428" y="38" fill="#28578F" font-size="20" font-weight="650">verifier</text>
     </g>
-    <text x="72" y="608" fill="#6E7F92" font-size="16">github.com/jzjzzzzzzz/agent-me</text>
+    <text x="72" y="608" fill="#6E7F92" font-size="16">github.com/PermutationResearch/agent-me</text>
     <text x="734" y="608" fill="#6E7F92" font-size="16" text-anchor="end">FastAPI + React · inspectable by design</text>
   </g>
   <line x1="792" y1="70" x2="792" y2="570" stroke="#DCE4ED" stroke-width="2"/>

@@ -13,8 +13,7 @@ The product direction combines open-source data extraction, GEPA prompt and skil
 [Public deployment](docs/PUBLIC_LAUNCH.md) · [Submit and review](docs/SUBMISSIONS.md) · [Trace studio](#trace-extraction-and-export) · [Quick start](#quick-start) · [Roadmap](ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [Learn](LEARN.md) · [Contribute](CONTRIBUTING.md)
 
 <p>
-  <a href="https://github.com/jzjzzzzzzz/agent-me/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/jzjzzzzzzz/agent-me/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/jzjzzzzzzz/agent-me/releases"><img alt="Release" src="https://img.shields.io/github/v/release/jzjzzzzzzz/agent-me"></a>
+  <a href="https://github.com/PermutationResearch/agent-me/releases"><img alt="Release" src="https://img.shields.io/github/v/release/PermutationResearch/agent-me"></a>
   <img alt="Python" src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&amp;logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&amp;logoColor=white">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4c1"></a>
@@ -195,7 +194,7 @@ The default evaluator reports `COLLABORATION_EVAL 4/4 passed`. CI also runs back
 **Requirement:** Docker with the Compose plugin.
 
 ```bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 # Preserve any existing .env configuration.
 if [ ! -e .env ]; then cp -n .env.example .env; fi
@@ -234,7 +233,7 @@ deterministic. See the [trust documentation](docs/TRUST.md) before using private
 **Requirements:** Python 3.11+, `uv` 0.11 or 0.12, Node.js 22+, npm, and Git.
 
 ```bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 make setup
 make knowledge-check

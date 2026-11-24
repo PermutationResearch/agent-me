@@ -41,7 +41,7 @@ El currículo explica y reconstruye la misma arquitectura de la implementación 
 Necesitas Docker con el complemento Compose.
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build
