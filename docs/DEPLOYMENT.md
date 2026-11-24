@@ -56,8 +56,8 @@ the uv installer image by digest so both the resolver input and installer are re
 ## Refresh pinned base images
 
 Each Dockerfile keeps a readable image tag and pins the corresponding multi-platform image index
-by digest. Dependabot checks the backend and frontend Dockerfiles weekly so digest changes remain
-visible and reviewable. To inspect the current tags manually, run:
+by digest. Dependabot is turned off in this repository, so digest changes are not proposed
+automatically; refresh them by hand. To inspect the current tags manually, run:
 
 ```bash
 docker buildx imagetools inspect python:3.14-slim
