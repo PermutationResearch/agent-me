@@ -196,7 +196,8 @@ The default evaluator reports `COLLABORATION_EVAL 4/4 passed`. CI also runs back
 ```bash
 git clone https://github.com/jzjzzzzzzz/agent-me.git
 cd agent-me
-cp .env.example .env
+# Preserve any existing .env configuration.
+if [ ! -e .env ]; then cp -n .env.example .env; fi
 docker compose up --build
 ```
 
