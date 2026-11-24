@@ -81,6 +81,18 @@ class CorpusIndex:
                 row["key"]: json.loads(row["value"])
                 for row in db.execute("SELECT key,value FROM metadata")
             }
+            fts = db.execute(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='document_fts'"
+            ).fetchone()
+        sql = fts["sql"] if fts else None
+        if sql is None:
+            self.fts_ranking = "unknown"
+        elif re.search(r"\bcontent\s*=\s*(['\"])\1", sql, re.IGNORECASE) and re.search(
+            r"\bdetail\s*=\s*['\"]?(column|none)\b", sql, re.IGNORECASE
+        ):
+            self.fts_ranking = "legacy_unranked"
+        else:
+            self.fts_ranking = "ranked"
         required = {
             "schema": INDEX_SCHEMA,
             "trust": UNTRUSTED,
@@ -142,6 +154,7 @@ class CorpusIndex:
             "read_only": True,
             "review_only": True,
             "promotion_performed": False,
+            "fts_ranking": self.fts_ranking,
             "conversations": int(counts.get("records", 0)),
             "events": int(counts.get("events", 0)),
             "owner_documents": int(owner_documents),

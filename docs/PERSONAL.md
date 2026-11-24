@@ -119,6 +119,14 @@ owner-only index and opens it through SQLite immutable/read-only mode. The Seman
 searches bounded owner-authored excerpts labeled as untrusted historical evidence. By default, search results
 do not enter private-chat grounding and never create or confirm a memory automatically.
 
+The corpus status API reports `fts_ranking`: `ranked` for the new index format,
+`legacy_unranked` for the earlier contentless reduced-detail format, and `unknown`
+when the table definition is unavailable. A legacy index remains readable but its
+search ordering may be poor. Rebuild a separate index from the original sources
+with the updated corpus builder, verify it, and only then point the
+configuration to its path and new SHA-256. Existing immutable indexes are not
+modified automatically; truncated stored excerpts cannot reconstruct full indexed text.
+
 For a combined work archive, set `PERSONAL_CORPUS_INCLUDE_WORK=true` to accept an
 `all_events` index and retrieve author-labelled assistant, tool, and saved-document evidence.
 Set `PERSONAL_CORPUS_CHAT_ENABLED=true` to cite matching historical excerpts in private

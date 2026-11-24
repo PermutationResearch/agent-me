@@ -53,6 +53,19 @@ def work_index(
     )
 
 
+def test_corpus_status_identifies_legacy_and_ranked_fts(tmp_path):
+    index = work_index(tmp_path, {"one": ["needle haystack"]})
+    assert index.status()["fts_ranking"] == "legacy_unranked"
+    with sqlite3.connect(index.path) as db:
+        db.execute("DROP TABLE document_fts")
+        db.execute("CREATE VIRTUAL TABLE document_fts USING fts5(text, content='', detail=full)")
+        db.execute("INSERT INTO document_fts(rowid,text) SELECT document_id,excerpt FROM documents")
+    ranked = CorpusIndex(
+        str(index.path), hashlib.sha256(index.path.read_bytes()).hexdigest(), include_work=True
+    )
+    assert ranked.status()["fts_ranking"] == "ranked"
+
+
 def test_unicode_query_retains_french_words(tmp_path):
     index = work_index(tmp_path, {"french": ["Économie et décision du projet."]})
     results = index.search("économie")
