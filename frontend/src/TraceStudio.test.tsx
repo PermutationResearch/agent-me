@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { webcrypto } from "node:crypto";
 import { TextEncoder } from "node:util";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { webcrypto } from "node:crypto";
 import { TextDecoder, TextEncoder } from "node:util";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
