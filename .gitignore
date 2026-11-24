@@ -24,3 +24,6 @@ private-twin-export.json
 .wrangler/
 .dev.vars*
 .deployment/
+
+# Machine-specific agent notes.
+AGENTS.local.md
