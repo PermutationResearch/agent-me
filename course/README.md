@@ -175,7 +175,7 @@ See the [glossary](GLOSSARY.md) for complete definitions.
 ## Help and contribution
 
 If a step is ambiguous, that is a documentation bug. Search existing issues, then open a
-[course feedback issue](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=course.yml) with:
+[course feedback issue](https://github.com/PermutationResearch/agent-me/issues/new?template=course.yml) with:
 
 - lesson number and section;
 - operating system and tool versions;

@@ -52,7 +52,7 @@
 ```bash
 git clone https://github.com/<your-username>/agent-me.git
 cd agent-me
-git remote add upstream https://github.com/jzjzzzzzzz/agent-me.git
+git remote add upstream https://github.com/PermutationResearch/agent-me.git
 git switch -c learner/baseline
 ```
 

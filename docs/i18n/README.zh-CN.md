@@ -80,7 +80,7 @@ Agent-Me 不是冒充你的 prompt、角色聊天机器人、声音克隆、静�
 需要安装 Docker 与 Compose 插件。
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build

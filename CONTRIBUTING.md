@@ -11,11 +11,11 @@ you agree that it is licensed under the repository's [MIT License](LICENSE).
 
 | Need | Channel |
 | --- | --- |
-| Reproducible software bug | [Bug report](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=bug.yml) |
-| Confusing lesson or exercise | [Course feedback](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=course.yml) |
-| New feature or role design | [Feature proposal](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=feature.yml) |
+| Reproducible software bug | [Bug report](https://github.com/PermutationResearch/agent-me/issues/new?template=bug.yml) |
+| Confusing lesson or exercise | [Course feedback](https://github.com/PermutationResearch/agent-me/issues/new?template=course.yml) |
+| New feature or role design | [Feature proposal](https://github.com/PermutationResearch/agent-me/issues/new?template=feature.yml) |
 | Roadmap or AI Twin design proposal | Read [ROADMAP.md](ROADMAP.md), then open a feature proposal |
-| New or corrected translation | [Translation issue](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=translation.yml) |
+| New or corrected translation | [Translation issue](https://github.com/PermutationResearch/agent-me/issues/new?template=translation.yml) |
 | Security vulnerability | Private process in [SECURITY.md](SECURITY.md), never a public issue |
 | Setup question | Search Issues first; open course feedback with sanitized diagnostics |
 
@@ -47,7 +47,7 @@ Search existing issues and comment before duplicating work. For significant AI T
 ```bash
 git clone https://github.com/<your-username>/agent-me.git
 cd agent-me
-git remote add upstream https://github.com/jzjzzzzzzz/agent-me.git
+git remote add upstream https://github.com/PermutationResearch/agent-me.git
 git fetch upstream
 git switch -c docs/clear-lesson-02 upstream/main
 ```

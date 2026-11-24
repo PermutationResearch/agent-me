@@ -41,7 +41,7 @@ Le cursus explique et reconstruit la même architecture que l’implémentation 
 Docker avec le plugin Compose est nécessaire.
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build

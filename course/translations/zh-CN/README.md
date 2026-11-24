@@ -147,7 +147,7 @@ git switch -c learner/my-agent-lab
 ## 获取帮助与参与贡献
 
 如果步骤不清楚，它就是文档问题。请搜索已有 Issue，然后使用
-[课程反馈模板](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=course.yml)，提供课号、系统与工具版本、准确命令、脱敏输出、预期与实际结果。
+[课程反馈模板](https://github.com/PermutationResearch/agent-me/issues/new?template=course.yml)，提供课号、系统与工具版本、准确命令、脱敏输出、预期与实际结果。
 
 课程修订、新练习、测试、无障碍优化和经过人工复核的翻译都欢迎。提交前阅读
 [`CONTRIBUTING.md`](../../../CONTRIBUTING.md)。安全问题按 [`SECURITY.md`](../../../SECURITY.md) 私下报告。

@@ -212,8 +212,8 @@ Good starting points include:
 
 Before implementing a substantial workstream item:
 
-1. Search existing issues and discussions.
-2. Open a [feature proposal](https://github.com/jzjzzzzzzz/agent-me/issues/new?template=feature.yml).
+1. Search existing issues.
+2. Open a [feature proposal](https://github.com/PermutationResearch/agent-me/issues/new?template=feature.yml).
 3. Define the user problem, current boundary, proposed contract, privacy impact, and evaluation plan.
 4. Keep the first pull request focused and independently testable.
 5. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and run the documented quality gates.

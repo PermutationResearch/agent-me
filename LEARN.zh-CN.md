@@ -4,7 +4,7 @@
 
 **从确定性检索到经过评估的多智能体结课项目。**
 
-[English](LEARN.md) · [简体中文](LEARN.zh-CN.md) · [完整中文课程](course/translations/zh-CN/README.md) · [提问](https://github.com/jzjzzzzzzz/agent-me/discussions/categories/q-a)
+[English](LEARN.md) · [简体中文](LEARN.zh-CN.md) · [完整中文课程](course/translations/zh-CN/README.md) · [提问](https://github.com/PermutationResearch/agent-me/issues)
 
 </div>
 
@@ -34,7 +34,7 @@ extractive 与 collaboration 实验都不需要 API Key。
 如果希望学习记录出现在自己的 GitHub 主页，可先 Fork 再克隆；也可以直接克隆本仓库：
 
 ```bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 make setup
 make lint
@@ -93,9 +93,7 @@ docker compose up --build
 
 ## 提问与贡献
 
-- 环境、课程与架构问题：使用 [Q&A Discussions](https://github.com/jzjzzzzzzz/agent-me/discussions/categories/q-a)。
-- 展示 Fork、结课项目或评估结果：使用 [Show and tell](https://github.com/jzjzzzzzzz/agent-me/discussions/categories/show-and-tell)。
-- 可复现 Bug 与明确任务：使用 [Issues](https://github.com/jzjzzzzzzz/agent-me/issues)。
+- 环境、课程与架构问题，展示 Fork、结课项目或评估结果，以及可复现 Bug 与明确任务：使用 [Issues](https://github.com/PermutationResearch/agent-me/issues)。
 - 提交 PR 前阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 安全问题请按照 [SECURITY.md](SECURITY.md) 私下报告。

@@ -41,7 +41,7 @@ Agent-Me 是可執行的 FastAPI + React 參考實作。Planner、Researcher、C
 需要安裝 Docker 與 Compose 外掛程式。
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build

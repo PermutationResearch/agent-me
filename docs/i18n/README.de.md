@@ -41,7 +41,7 @@ Das Curriculum erklärt und rekonstruiert dieselbe Architektur wie die Referenzi
 Benötigt werden Docker und das Compose-Plugin.
 
 ~~~bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 cp .env.example .env
 docker compose up --build

@@ -4,7 +4,7 @@
 
 **A step-by-step path from deterministic retrieval to an evaluated multi-agent capstone.**
 
-[English](LEARN.md) · [简体中文](LEARN.zh-CN.md) · [Full syllabus](course/README.md) · [Ask for help](https://github.com/jzjzzzzzzz/agent-me/discussions/categories/q-a)
+[English](LEARN.md) · [简体中文](LEARN.zh-CN.md) · [Full syllabus](course/README.md) · [Ask for help](https://github.com/PermutationResearch/agent-me/issues)
 
 </div>
 
@@ -36,7 +36,7 @@ Fork the repository if you want your work to remain visible on your GitHub profi
 fork. Otherwise, clone this repository directly:
 
 ```bash
-git clone https://github.com/jzjzzzzzzz/agent-me.git
+git clone https://github.com/PermutationResearch/agent-me.git
 cd agent-me
 make setup
 ```
@@ -161,11 +161,8 @@ A precise portfolio statement is stronger than an inflated one:
 
 ## Get help or contribute
 
-- Use [Q&A Discussions](https://github.com/jzjzzzzzzz/agent-me/discussions/categories/q-a) for setup,
-  lesson, and design questions.
-- Use [Show and tell](https://github.com/jzjzzzzzzz/agent-me/discussions/categories/show-and-tell)
-  to share a fork, capstone, evaluation result, or learning note.
-- Use [Issues](https://github.com/jzjzzzzzzz/agent-me/issues) for reproducible bugs and scoped work.
+- Use [Issues](https://github.com/PermutationResearch/agent-me/issues) for setup, lesson, and design questions, to share a fork,
+  capstone, evaluation result, or learning note, and for reproducible bugs and scoped work.
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 Remove secrets, personal records, private prompts, and proprietary documents from logs, screenshots,

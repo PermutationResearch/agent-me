@@ -13,8 +13,11 @@ from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-OWNED_REPOSITORIES = {"agent-me", "human-api"}
-EXPECTED_OWNER = "jzjzzzzzzz"
+# Expected GitHub owner for each repository the docs link to.
+OWNED_REPOSITORIES = {"agent-me": "PermutationResearch", "human-api": "jzjzzzzzzz"}
+# Agent-Me began upstream; its issue, pull request and CI-run records stay there.
+UPSTREAM_AGENT_ME_OWNER = "jzjzzzzzzz"
+UPSTREAM_HISTORY = re.compile(r"(?:issues|pull)/\d+|actions/runs/\d+")
 LESSONS = (
     "00-course-setup",
     "01-grounded-qa",
@@ -218,10 +221,16 @@ def validate_file(path: Path) -> list[str]:
         if parsed.scheme in {"http", "https"}:
             if parsed.netloc == "github.com":
                 parts = [part for part in parsed.path.split("/") if part]
+                upstream_record = (
+                    len(parts) >= 2
+                    and parts[:2] == [UPSTREAM_AGENT_ME_OWNER, "agent-me"]
+                    and UPSTREAM_HISTORY.fullmatch("/".join(parts[2:])) is not None
+                )
                 if (
                     len(parts) >= 2
                     and parts[1] in OWNED_REPOSITORIES
-                    and parts[0] != EXPECTED_OWNER
+                    and parts[0] != OWNED_REPOSITORIES[parts[1]]
+                    and not upstream_record
                 ):
                     errors.append(
                         f"{path.relative_to(ROOT)}: unexpected GitHub owner in {destination}"
