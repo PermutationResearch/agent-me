@@ -1,3 +1,5 @@
+import { personalMessages, type PersonalWorkspaceMessages } from "./personalMessages";
+
 export const supportedLocales = [
   { code: "en", label: "English" },
   { code: "zh-CN", label: "简体中文" },
@@ -13,13 +15,18 @@ export const supportedLocales = [
 export type Locale = (typeof supportedLocales)[number]["code"];
 
 export type Messages = {
+  personalWorkspace: PersonalWorkspaceMessages;
   language: string;
   projectLabel: string;
   title: string;
   intro: string;
   formLabel: string;
+  conversation: string;
+  newConversation: string;
   placeholder: string;
   searching: string;
+  cancelRequest: string;
+  requestCancelled: string;
   ask: string;
   answer: string;
   groundingSources: string;
@@ -75,6 +82,9 @@ export type Messages = {
 
 export const messages: Record<Locale, Messages> = {
   en: {
+    personalWorkspace: personalMessages.en,
+    conversation: "Conversation",
+    newConversation: "New conversation",
     compareWorkflows: "Compare workflows",
     compareHelp: "Runs both local collaboration policies with the same question, independently of the selected mode. Neither sends data to an external model provider.",
     comparisonQuestion: "Compared question",
@@ -101,6 +111,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "Ask the example knowledge base",
     placeholder: "How does the example agent plan a project?",
     searching: "Searching…",
+    cancelRequest: "Cancel request",
+    requestCancelled: "Request cancelled. You can edit your question and try again.",
     ask: "Ask",
     answer: "Answer",
     groundingSources: "Grounding sources",
@@ -142,6 +154,9 @@ export const messages: Record<Locale, Messages> = {
       "Prompts are untrusted input. Review your documents before publishing and never commit secrets.",
   },
   "zh-CN": {
+    personalWorkspace: personalMessages["zh-CN"],
+    conversation: "对话",
+    newConversation: "新对话",
     compareWorkflows: "对比工作流",
     compareHelp: "用相同问题运行两种本地协作策略，不受当前模式选择影响。两者均不向外部模型服务发送数据。",
     comparisonQuestion: "对比的问题",
@@ -168,6 +183,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "向示例知识库提问",
     placeholder: "示例 Agent 如何规划一个项目？",
     searching: "正在检索…",
+    cancelRequest: "取消请求",
+    requestCancelled: "请求已取消。你可以编辑问题后重试。",
     ask: "提问",
     answer: "回答",
     groundingSources: "依据来源",
@@ -203,6 +220,9 @@ export const messages: Record<Locale, Messages> = {
     footer: "提示词是不可信输入。发布前请检查文档，切勿提交任何密钥。",
   },
   "zh-TW": {
+    personalWorkspace: personalMessages["zh-TW"],
+    conversation: "對話",
+    newConversation: "新對話",
     compareWorkflows: "比較工作流程",
     compareHelp: "用相同問題執行兩種本機協作策略，不受目前模式選擇影響。兩者均不向外部模型服務傳送資料。",
     comparisonQuestion: "比較的問題",
@@ -229,6 +249,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "向範例知識庫提問",
     placeholder: "範例 Agent 如何規劃一個專案？",
     searching: "正在搜尋…",
+    cancelRequest: "取消請求",
+    requestCancelled: "請求已取消。你可以編輯問題後重試。",
     ask: "提問",
     answer: "回答",
     groundingSources: "依據來源",
@@ -264,6 +286,9 @@ export const messages: Record<Locale, Messages> = {
     footer: "提示詞是不受信任的輸入。發布前請檢查文件，切勿提交任何密鑰。",
   },
   ja: {
+    personalWorkspace: personalMessages.ja,
+    conversation: "会話",
+    newConversation: "新しい会話",
     compareWorkflows: "ワークフローを比較",
     compareHelp: "選択中のモードに関係なく、同じ質問で両方のローカル協調ポリシーを実行します。どちらも外部モデルにデータを送りません。",
     comparisonQuestion: "比較する質問",
@@ -290,6 +315,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "サンプル知識ベースに質問",
     placeholder: "サンプルエージェントはプロジェクトをどう計画しますか？",
     searching: "検索中…",
+    cancelRequest: "リクエストをキャンセル",
+    requestCancelled: "リクエストをキャンセルしました。質問を編集して再試行できます。",
     ask: "質問する",
     answer: "回答",
     groundingSources: "根拠となるソース",
@@ -331,6 +358,9 @@ export const messages: Record<Locale, Messages> = {
       "プロンプトは信頼できない入力です。公開前に文書を確認し、秘密情報をコミットしないでください。",
   },
   ko: {
+    personalWorkspace: personalMessages.ko,
+    conversation: "대화",
+    newConversation: "새 대화",
     compareWorkflows: "워크플로 비교",
     compareHelp: "선택된 모드와 관계없이 같은 질문으로 두 로컬 협업 정책을 실행합니다. 둘 다 외부 모델 제공업체에 데이터를 보내지 않습니다.",
     comparisonQuestion: "비교 질문",
@@ -357,6 +387,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "예제 지식 베이스에 질문하기",
     placeholder: "예제 에이전트는 프로젝트를 어떻게 계획하나요?",
     searching: "검색 중…",
+    cancelRequest: "요청 취소",
+    requestCancelled: "요청이 취소되었습니다. 질문을 수정한 후 다시 시도할 수 있습니다.",
     ask: "질문하기",
     answer: "답변",
     groundingSources: "근거 출처",
@@ -397,6 +429,9 @@ export const messages: Record<Locale, Messages> = {
       "프롬프트는 신뢰할 수 없는 입력입니다. 게시 전에 문서를 검토하고 비밀 정보를 커밋하지 마세요.",
   },
   es: {
+    personalWorkspace: personalMessages.es,
+    conversation: "Conversación",
+    newConversation: "Nueva conversación",
     compareWorkflows: "Comparar flujos",
     compareHelp: "Ejecuta ambas políticas locales con la misma pregunta, sin depender del modo seleccionado. Ninguna envía datos a un proveedor de modelos externo.",
     comparisonQuestion: "Pregunta comparada",
@@ -423,6 +458,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "Pregunta a la base de conocimiento de ejemplo",
     placeholder: "¿Cómo planifica un proyecto el agente de ejemplo?",
     searching: "Buscando…",
+    cancelRequest: "Cancelar solicitud",
+    requestCancelled: "Solicitud cancelada. Puedes editar tu pregunta e intentarlo de nuevo.",
     ask: "Preguntar",
     answer: "Respuesta",
     groundingSources: "Fuentes de respaldo",
@@ -464,6 +501,9 @@ export const messages: Record<Locale, Messages> = {
       "Los prompts son entradas no confiables. Revisa tus documentos antes de publicarlos y nunca confirmes secretos.",
   },
   fr: {
+    personalWorkspace: personalMessages.fr,
+    conversation: "Conversation",
+    newConversation: "Nouvelle conversation",
     compareWorkflows: "Comparer les flux",
     compareHelp: "Exécute les deux politiques locales avec la même question, quel que soit le mode sélectionné. Aucune n’envoie de données à un fournisseur de modèles externe.",
     comparisonQuestion: "Question comparée",
@@ -490,6 +530,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "Interroger la base de connaissances d'exemple",
     placeholder: "Comment l'agent d'exemple planifie-t-il un projet ?",
     searching: "Recherche…",
+    cancelRequest: "Annuler la requête",
+    requestCancelled: "Requête annulée. Vous pouvez modifier votre question et réessayer.",
     ask: "Interroger",
     answer: "Réponse",
     groundingSources: "Sources de référence",
@@ -531,6 +573,9 @@ export const messages: Record<Locale, Messages> = {
       "Les prompts sont des entrées non fiables. Vérifiez vos documents avant publication et ne validez jamais de secrets.",
   },
   de: {
+    personalWorkspace: personalMessages.de,
+    conversation: "Gespräch",
+    newConversation: "Neues Gespräch",
     compareWorkflows: "Workflows vergleichen",
     compareHelp: "Führt beide lokalen Abläufe mit derselben Frage aus, unabhängig vom gewählten Modus. Keiner sendet Daten an einen externen Modellanbieter.",
     comparisonQuestion: "Verglichene Frage",
@@ -557,6 +602,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "Die Beispiel-Wissensbasis fragen",
     placeholder: "Wie plant der Beispiel-Agent ein Projekt?",
     searching: "Suche läuft…",
+    cancelRequest: "Anfrage abbrechen",
+    requestCancelled: "Anfrage abgebrochen. Du kannst deine Frage bearbeiten und es erneut versuchen.",
     ask: "Fragen",
     answer: "Antwort",
     groundingSources: "Belegquellen",
@@ -598,6 +645,9 @@ export const messages: Record<Locale, Messages> = {
       "Prompts sind nicht vertrauenswürdige Eingaben. Prüfe Dokumente vor der Veröffentlichung und committe niemals Geheimnisse.",
   },
   "pt-BR": {
+    personalWorkspace: personalMessages["pt-BR"],
+    conversation: "Conversa",
+    newConversation: "Nova conversa",
     compareWorkflows: "Comparar fluxos",
     compareHelp: "Executa as duas políticas locais com a mesma pergunta, independentemente do modo selecionado. Nenhuma envia dados a um provedor de modelos externo.",
     comparisonQuestion: "Pergunta comparada",
@@ -624,6 +674,8 @@ export const messages: Record<Locale, Messages> = {
     formLabel: "Pergunte à base de conhecimento de exemplo",
     placeholder: "Como o agente de exemplo planeja um projeto?",
     searching: "Pesquisando…",
+    cancelRequest: "Cancelar solicitação",
+    requestCancelled: "Solicitação cancelada. Você pode editar sua pergunta e tentar novamente.",
     ask: "Perguntar",
     answer: "Resposta",
     groundingSources: "Fontes de referência",

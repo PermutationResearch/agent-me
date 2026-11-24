@@ -34,6 +34,7 @@ import { SubmitPage } from "./SubmitPage";
 import { ReceiptPage } from "./ReceiptPage";
 import { McpPage } from "./McpPage";
 import { BuyerReview } from "./BuyerReview";
+import { chatHistory, type ConversationTurn } from "./chatHistory";
 
 const DEFAULT_MAX_QUESTION_CHARS = 8000;
 type RequestError = { detail: string | null };
@@ -56,8 +57,12 @@ function AgentWorkspace() {
   const [locale, setLocale] = useState<Locale>(initialLocale);
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<ChatResponse | CollaborationResponse | null>(null);
+  const [conversation, setConversation] = useState<ConversationTurn[]>([]);
   const [error, setError] = useState<RequestError | null>(null);
   const [loading, setLoading] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
+  const requestController = useRef<AbortController | null>(null);
+  const questionInput = useRef<HTMLTextAreaElement | null>(null);
   const [comparison, setComparison] = useState<ComparisonState | null>(null);
   const [comparing, setComparing] = useState(false);
   const comparisonController = useRef<AbortController | null>(null);
@@ -84,7 +89,12 @@ function AgentWorkspace() {
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  useEffect(() => () => comparisonController.current?.abort(), []);
+  useEffect(() => () => {
+    const controller = requestController.current;
+    requestController.current = null;
+    controller?.abort();
+    comparisonController.current?.abort();
+  }, []);
 
   function selectWorkflow(mode: WorkflowMode) {
     setWorkflowMode(mode);
@@ -117,35 +127,65 @@ function AgentWorkspace() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!question.trim() || busy) return;
+    if (!question.trim() || requestController.current || comparisonController.current) return;
 
+    const submittedQuestion = question.trim();
+    const submittedMode = workflowMode;
+    const controller = new AbortController();
+    requestController.current = controller;
     setLoading(true);
+    setCancelled(false);
     setError(null);
     setResult(null);
     setComparison(null);
     try {
-      setResult(
-        workflowMode === "standard"
-          ? await ask(question.trim())
-          : await collaborate(
-              question.trim(),
-              workflowMode === "verified" ? "verified" : "baseline",
-            ),
-      );
+      const response = submittedMode === "standard"
+        ? await ask(submittedQuestion, controller.signal, chatHistory(
+            conversation, profile?.max_history_chars ?? 24000,
+            profile?.max_history_turn_chars ?? 8000,
+          ), conversation.at(-1)?.response.sources.map(({ path, excerpt }) => ({ path, excerpt })) ?? [])
+        : await collaborate(
+            submittedQuestion,
+            submittedMode === "verified" ? "verified" : "baseline",
+            controller.signal,
+          );
+      if (requestController.current === controller && !controller.signal.aborted) {
+        setResult(response);
+        if (submittedMode === "standard" && response.mode !== "multi-agent-local") {
+          setConversation((current) => [...current, { question: submittedQuestion, response }]);
+        }
+      }
     } catch (reason) {
-      const detail = reason instanceof ApiError ? reason.message : "";
-      setError({ detail: detail || null });
+      if (requestController.current === controller && !controller.signal.aborted) {
+        const detail = reason instanceof ApiError ? reason.message : "";
+        setError({ detail: detail || null });
+      }
     } finally {
-      setLoading(false);
+      // A cancelled/unmounted request must not change the state of a newer run.
+      if (requestController.current === controller) {
+        requestController.current = null;
+        setLoading(false);
+      }
     }
+  }
+
+  function cancelRequest() {
+    const controller = requestController.current;
+    if (!controller) return;
+    requestController.current = null;
+    controller.abort();
+    setLoading(false);
+    setCancelled(true);
+    questionInput.current?.focus();
   }
 
   async function compare(questionToCompare: string) {
     const submittedQuestion = questionToCompare.trim();
-    if (!submittedQuestion || loading || comparisonController.current) return;
+    if (!submittedQuestion || requestController.current || comparisonController.current) return;
     const controller = new AbortController();
     comparisonController.current = controller;
     setComparing(true);
+    setCancelled(false);
     setResult(null);
     setError(null);
     setComparison({
@@ -178,7 +218,6 @@ function AgentWorkspace() {
     if (!controller.signal.aborted) setComparing(false);
     if (comparisonController.current === controller) comparisonController.current = null;
   }
-
   return (
     <div className="app-shell">
       <nav className="topbar" aria-label="Agent-Me">
@@ -215,7 +254,7 @@ function AgentWorkspace() {
         </header>
 
         <div className="workspace-grid">
-          {profile?.personal_enabled && <PersonalWorkspace external={profile.external_provider_enabled} maxQuestionChars={maxQuestionChars} />}
+          {profile?.personal_enabled && <PersonalWorkspace external={profile.external_provider_enabled} text={text.personalWorkspace} maxQuestionChars={maxQuestionChars} />}
 
           <form className="query-console" onSubmit={submit} aria-busy={busy}>
             <div className="console-heading">
@@ -272,6 +311,7 @@ function AgentWorkspace() {
             <div className="ask-row">
               <textarea
                 id="question"
+                ref={questionInput}
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
                 placeholder={text.placeholder}
@@ -298,6 +338,14 @@ function AgentWorkspace() {
           </form>
         </div>
 
+        {/* Keep cancellation accessible outside the form's aria-busy region. */}
+        {(loading || cancelled) && (
+          <div className="request-cancellation">
+            {loading && <button type="button" onClick={cancelRequest}>{text.cancelRequest}</button>}
+            {cancelled && <p role="status">{text.requestCancelled}</p>}
+          </div>
+        )}
+
         {error && (
           <p role="alert" className="error">
             {error.detail ? `${text.requestFailed}: ${error.detail}` : text.requestFailed}
@@ -306,7 +354,30 @@ function AgentWorkspace() {
 
         <LocalRunReplay text={text} />
 
-        {result && <AnswerResult result={result} text={text} />}
+        {workflowMode === "standard" && conversation.length > 0 && (
+          <section aria-label={text.conversation}>
+            <div className="answer-heading">
+              <h2>{text.conversation}</h2>
+              <button type="button" disabled={busy} onClick={() => {
+                setConversation([]);
+                setResult(null);
+                setQuestion("");
+                setError(null);
+                setCancelled(false);
+                questionInput.current?.focus();
+              }}>{text.newConversation}</button>
+            </div>
+            {conversation.map((turn, index) => (
+              <details key={index} open={index === conversation.length - 1}>
+                <summary>{turn.question}</summary>
+                <AnswerResult key={conversation.length} result={turn.response} text={text} headingLevel={3} />
+              </details>
+            ))}
+          </section>
+        )}
+        {result && (workflowMode !== "standard" || result.mode === "multi-agent-local" || conversation.length === 0) && (
+          <AnswerResult result={result} text={text} />
+        )}
         {comparison && (
           <WorkflowComparison comparison={comparison} comparing={comparing} text={text} onRetry={() => compare(comparison.question)} />
         )}

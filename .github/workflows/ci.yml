@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.12.7"
           python-version: "3.12"
@@ -31,6 +31,24 @@ jobs:
       - run: .venv/bin/ruff check backend scripts
       - run: .venv/bin/ruff format --check backend scripts
       - run: .venv/bin/pytest backend/tests
+      - name: Evaluate longitudinal personal memory
+        run: .venv/bin/python scripts/evaluate_memory.py
+      - name: Evaluate controlled personal learning
+        run: .venv/bin/python scripts/evaluate_learning.py
+      - name: Validate independent semantic benchmark annotations
+        run: .venv/bin/python scripts/evaluate_semantic_learning.py --check-fixture
+      - name: Evaluate identity, temporal memory and retention
+        run: .venv/bin/python scripts/evaluate_identity.py
+      - name: Evaluate personal retrieval and live claims
+        run: .venv/bin/python scripts/evaluate_retrieval.py
+      - name: Evaluate private-chat recall and abstention
+        run: .venv/bin/python scripts/evaluate_chat_recall.py
+      - name: Evaluate bounded local agency
+        run: .venv/bin/python scripts/evaluate_agency.py
+      - name: Evaluate portable owner control and audit
+        run: .venv/bin/python scripts/evaluate_owner_control.py
+      - name: Evaluate longitudinal metrics
+        run: .venv/bin/python scripts/evaluate_longitudinal.py --json
       - name: Publish baseline evaluation summary
         run: |
           set -o pipefail
@@ -50,7 +68,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.12.7"
           python-version: "3.11"
@@ -60,6 +78,15 @@ jobs:
       - run: uv sync --project backend --locked --extra dev --python 3.11
         env: { UV_PROJECT_ENVIRONMENT: "${{ github.workspace }}/.venv" }
       - run: .venv/bin/pytest backend/tests
+      - run: .venv/bin/python scripts/evaluate_memory.py
+      - run: .venv/bin/python scripts/evaluate_learning.py
+      - run: .venv/bin/python scripts/evaluate_semantic_learning.py --check-fixture
+      - run: .venv/bin/python scripts/evaluate_identity.py
+      - run: .venv/bin/python scripts/evaluate_retrieval.py
+      - run: .venv/bin/python scripts/evaluate_chat_recall.py
+      - run: .venv/bin/python scripts/evaluate_agency.py
+      - run: .venv/bin/python scripts/evaluate_owner_control.py
+      - run: .venv/bin/python scripts/evaluate_longitudinal.py --json
       - run: .venv/bin/python scripts/evaluate_collaboration.py --json
       - run: .venv/bin/python scripts/evaluate_collaboration.py --workflow verified --json
 
@@ -72,10 +99,48 @@ jobs:
       - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
       - run: npm ci
+      - name: Audit locked frontend dependencies
+        run: npm run audit:deps
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  browser-e2e:
+    name: Owner browser acceptance
+    runs-on: ubuntu-latest
+    # Playwright's OS dependencies can take over 9 minutes on a slow APT mirror.
+    # Keep time for the full browser suite after installation finishes.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.7"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - uses: actions/setup-node@v7
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - run: uv sync --project backend --locked --extra dev
+        env: { UV_PROJECT_ENVIRONMENT: "${{ github.workspace }}/.venv" }
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - name: Exercise the built UI against an isolated fictional API
+        run: npm run test:e2e
+        working-directory: frontend
+      - name: Upload fictional browser screenshots and failure traces
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: owner-browser-acceptance
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
 
   windows-powershell:
     runs-on: windows-latest
@@ -84,7 +149,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.12.7"
           python-version: "3.12"
@@ -109,6 +174,15 @@ jobs:
           .\.venv\Scripts\ruff.exe check backend scripts
           .\.venv\Scripts\ruff.exe format --check backend scripts
           .\.venv\Scripts\pytest.exe backend\tests
+          .\.venv\Scripts\python.exe scripts\evaluate_memory.py
+          .\.venv\Scripts\python.exe scripts\evaluate_learning.py
+          .\.venv\Scripts\python.exe scripts\evaluate_semantic_learning.py --check-fixture
+          .\.venv\Scripts\python.exe scripts\evaluate_identity.py
+          .\.venv\Scripts\python.exe scripts\evaluate_retrieval.py
+          .\.venv\Scripts\python.exe scripts\evaluate_chat_recall.py
+          .\.venv\Scripts\python.exe scripts\evaluate_agency.py
+          .\.venv\Scripts\python.exe scripts\evaluate_owner_control.py
+          .\.venv\Scripts\python.exe scripts\evaluate_longitudinal.py --json
           .\.venv\Scripts\python.exe scripts\evaluate_collaboration.py --json
           .\.venv\Scripts\python.exe scripts\evaluate_collaboration.py --workflow verified --json
           .\.venv\Scripts\python.exe scripts\check_docs.py
@@ -130,7 +204,7 @@ jobs:
       - run: python3 scripts/check_docs.py
 
   containers:
-    needs: [backend, frontend, documentation]
+    needs: [backend, frontend, documentation, browser-e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

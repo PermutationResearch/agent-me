@@ -2,7 +2,7 @@ import importlib
 import importlib.util
 
 import pytest
-from test_personal import HEADERS, personal  # noqa: F401
+from test_personal import HEADERS
 
 
 async def test_optimization_endpoints_require_private_authentication(personal):  # noqa: F811

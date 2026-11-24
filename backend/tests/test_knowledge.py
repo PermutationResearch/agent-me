@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from app.knowledge import KnowledgeBase, KnowledgeLoadError
+from app.knowledge import KnowledgeBase, KnowledgeLoadError, _excerpt
+from app.text import normalized_tokens
 
 
 def test_documents_are_relative_sorted_and_utf8(tmp_path: Path) -> None:
@@ -153,6 +154,92 @@ def test_search_order_and_limit_are_deterministic(tmp_path: Path) -> None:
     matches = KnowledgeBase(str(tmp_path)).search("Alpha Python", limit=1)
 
     assert [match.document.path for match in matches] == ["a.md"]
+
+
+@pytest.mark.parametrize("separator", ["\n", "\t", "\r\n", "\u00a0"])
+def test_excerpt_uses_whitespace_boundaries_at_both_edges(separator: str) -> None:
+    paragraph = ("abcdefghij" + separator) * 200 + "needle " + ("klmnopqrst" + separator) * 200
+
+    excerpt = _excerpt(paragraph, {"needle"})
+
+    assert len(excerpt) <= 1_000
+    assert "needle" in excerpt
+    assert excerpt.lstrip().startswith("abcdefghij")
+    assert excerpt.rstrip().endswith("klmnopqrst")
+    assert excerpt == _excerpt(paragraph, {"needle"})
+
+
+def test_long_excerpt_keeps_late_matching_term(tmp_path: Path) -> None:
+    (tmp_path / "late.md").write_text(
+        "# Late\n\n" + "filler " * 170 + "UniqueNeedle", encoding="utf-8"
+    )
+
+    match = KnowledgeBase(str(tmp_path)).search("UniqueNeedle")[0]
+
+    assert len(match.excerpt) <= 1_000
+    assert "UniqueNeedle" in match.excerpt
+
+
+def test_long_excerpt_keeps_widely_spaced_matches_when_they_fit(tmp_path: Path) -> None:
+    (tmp_path / "wide.md").write_text(
+        "Alpha " + "filler " * 50 + "Beta " + "filler " * 50 + "Gamma",
+        encoding="utf-8",
+    )
+
+    match = KnowledgeBase(str(tmp_path)).search("Alpha Beta Gamma")[0]
+
+    assert len(match.excerpt) <= 1_000
+    assert all(term in match.excerpt for term in ("Alpha", "Beta", "Gamma"))
+
+
+def test_long_excerpt_preserves_unicode_match(tmp_path: Path) -> None:
+    (tmp_path / "unicode.md").write_text("填充 " * 400 + "Évaluation", encoding="utf-8")
+
+    match = KnowledgeBase(str(tmp_path)).search("évaluation")[0]
+
+    assert len(match.excerpt) <= 1_000
+    assert "Évaluation" in match.excerpt
+
+
+@pytest.mark.parametrize("term", ["Évaluation", "E\u0301valuation"])
+@pytest.mark.parametrize("question", ["évaluation", "e\u0301valuation"])
+def test_long_excerpt_keeps_composed_and_decomposed_matches(
+    tmp_path: Path, term: str, question: str
+) -> None:
+    paragraph = "filler " * 170 + term + " trailing" * 170
+    (tmp_path / "unicode.md").write_text(paragraph, encoding="utf-8")
+
+    matches = KnowledgeBase(str(tmp_path)).search(question)
+
+    assert len(matches) == 1
+    assert matches[0].score == 1.0
+    assert len(matches[0].excerpt) <= 1_000
+    assert term in matches[0].excerpt
+    assert matches[0].excerpt in paragraph
+    assert normalized_tokens(question) <= normalized_tokens(matches[0].excerpt)
+
+
+@pytest.mark.parametrize("term", ["检索", "E\u0301valuation"])
+def test_long_excerpt_keeps_matches_inside_unspaced_han_text(tmp_path: Path, term: str) -> None:
+    paragraph = "填" * 1_100 + term + "充" * 1_100
+    (tmp_path / "han.md").write_text(paragraph, encoding="utf-8")
+
+    match = KnowledgeBase(str(tmp_path)).search(term)[0]
+
+    assert len(match.excerpt) <= 1_000
+    assert term in match.excerpt
+    assert match.excerpt in paragraph
+    assert normalized_tokens(term) <= normalized_tokens(match.excerpt)
+
+
+def test_excerpt_word_boundary_adjustment_does_not_drop_a_match() -> None:
+    paragraph = "a" * 51 + " needle " + "b" * 36 + " other " + "c" * 2 + " " + "d" * 20
+
+    excerpt = _excerpt(paragraph, {"needle", "other"}, limit=50)
+
+    assert len(excerpt) <= 50
+    assert "needle" in excerpt
+    assert "other" in excerpt
 
 
 @pytest.mark.parametrize(
@@ -308,3 +395,85 @@ def test_title_extraction_from_atx_h1() -> None:
     assert _title(Path("fallback.md"), "## H2 is ignored\n# Valid H1") == "Valid H1"
     assert _title(Path("fallback.md"), "    # Four spaces is not H1\n# Valid H1") == "Valid H1"
     assert _title(Path("fallback.md"), "No heading") == "Fallback"
+
+
+@pytest.mark.parametrize("fence", ["```", "~~~", "````", "~~~~"])
+@pytest.mark.parametrize("indent", ["", "   "])
+def test_document_title_ignores_fenced_code(tmp_path: Path, fence: str, indent: str) -> None:
+    (tmp_path / "profile.md").write_text(
+        f"{indent}{fence}sh\n# install dependencies\n\nnpm ci\n"
+        f"{indent}{fence}\n\n# Developer Profile\n\nPython prototypes.",
+        encoding="utf-8",
+    )
+
+    knowledge = KnowledgeBase(str(tmp_path))
+
+    assert knowledge.documents()[0].title == "Developer Profile"
+    assert knowledge.search("Python prototypes")[0].document.title == "Developer Profile"
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "```sh\n# comment\n```",  # Only apparent H1 is fenced.
+        "~~~sh\n# comment",  # An unclosed fence extends through the document.
+        "````sh\n```\n# comment\n````",  # A shorter fence cannot close the block.
+        "~~~sh\n```\n# comment\n~~~",  # The marker type must match.
+        "```sh\n``` trailing text\n# comment\n```",  # Closing fences cannot have info strings.
+        "~~~sh\n\n# comment\n\n~~~",  # Blank lines do not end the code block.
+    ],
+)
+def test_title_falls_back_when_h1_is_only_inside_fenced_code(text: str) -> None:
+    from app.knowledge import _title
+
+    assert _title(Path("fallback-name.md"), text) == "Fallback Name"
+
+
+@pytest.mark.parametrize("fence", ["```", "~~~"])
+def test_title_accepts_longer_closing_fences_with_trailing_whitespace(fence: str) -> None:
+    from app.knowledge import _title
+
+    text = f"{fence}sh\n# comment\n{fence * 2} \t\n# Real title"
+
+    assert _title(Path("fallback.md"), text) == "Real title"
+
+
+@pytest.mark.parametrize("opening", ["    ```sh", "    ~~~sh", "```invalid`info"])
+def test_non_fence_lines_do_not_hide_a_following_h1(opening: str) -> None:
+    from app.knowledge import _title
+
+    assert _title(Path("fallback.md"), f"{opening}\n# Real title") == "Real title"
+
+
+@pytest.mark.parametrize("empty_h1", ["#", "#   ", "   #\t", "# ###", "   #\t###  "])
+def test_empty_h1_does_not_preempt_a_meaningful_title(empty_h1: str) -> None:
+    from app.knowledge import _title
+
+    path = Path("fallback-name.md")
+    assert _title(path, f"{empty_h1}\n# Actual title ###") == "Actual title"
+    assert _title(path, f"{empty_h1}\n## Lower-level heading") == "Fallback Name"
+
+
+def test_title_keeps_hashes_that_are_not_closing_markup() -> None:
+    from app.knowledge import _title
+
+    assert _title(Path("fallback.md"), "# Why C#?") == "Why C#?"
+
+
+@pytest.mark.parametrize("opening,closing", [("````python", "`````"), ("~~~sh", "~~~")])
+def test_search_keeps_code_comments_literal_across_blank_lines(
+    tmp_path: Path, opening: str, closing: str
+) -> None:
+    (tmp_path / "guide.md").write_text(
+        f"# Guide\n\n{opening}\ncommand = 'example'\n\n# sqlite migration note\n\n"
+        f"{closing}\n\n## Preserve citations\nBody text for the section.\n",
+        encoding="utf-8",
+    )
+    knowledge = KnowledgeBase(str(tmp_path))
+
+    comments = knowledge.search("sqlite migration")
+    assert len(comments) == 1
+    assert comments[0].excerpt == "# sqlite migration note"
+    headings = knowledge.search("preserve citations")
+    assert len(headings) == 1
+    assert headings[0].excerpt == "Preserve citations\nBody text for the section."

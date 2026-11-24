@@ -27,3 +27,7 @@ private-twin-export.json
 
 # Machine-specific agent notes.
 AGENTS.local.md
+# Disposable browser-test artifacts and downloaded test browsers.
+frontend/test-results/
+frontend/playwright-report/
+frontend/.playwright/

@@ -24,6 +24,8 @@ npm run dev -- --host 127.0.0.1
 打开 `http://localhost:5173`。在 `private/personal.env` 中查看 `PERSONAL_TOKEN`，
 粘贴到“我的 AI 分身”的密钥输入框。密钥只保存在当前页面内存中，刷新后重新解锁。
 Windows 可使用 `.venv\Scripts\uvicorn.exe` 和 `python` 替换对应命令。
+私有工作区的控件与数据去向说明会跟随页面语言切换；切换语言不会重新锁定工作区、清除草稿，
+也不会重新请求私有数据。记忆正文、聊天内容、字段键和 API 类型值始终保持原样。
 
 初始化脚本具有幂等性：保留已有工作区数据和 `.env`，同时重新创建缺失的非敏感基础文件。
 不使用该命令时私有模式默认关闭。已有 `.env` 中的模型配置仍然有效。
@@ -47,37 +49,76 @@ Windows 可使用 `.venv\Scripts\uvicorn.exe` 和 `python` 替换对应命令。
 需要更多资料时，将 Markdown 文件放入 `private/knowledge/`，它们只用于私有聊天。
 这里的文件由你手工维护，被视为已授权知识，不经过候选记忆确认。
 
-### 3. 聊天与确认
+### 3. 来源审核工作台
 
-在**私有聊天**输入 `记住：先给结论，再给细节` 或 `Remember: Keep answers concise`。
-系统保存对话，并将指令后的文本作为待确认偏好；点击确认后才用于后续回答。
-本版采用明确指令提取，不会从普通聊天中自动推断事实；事实、事件和决策请在表单中选择类型。
-从聊天提取的默认字段为 `conversation.preference`，可先编辑成更具体的字段再确认。
+解锁后点击“打开审核工作台”，完成受控学习与有据问答：
 
-已确认的偏好无需词项命中也可进入私有回答上下文，其他记忆采用词项匹配检索。
-记忆最多选取 20 条，发送给模型的上下文仍受 `MAX_CONTEXT_CHARS` 限制。
-没有配置模型时仅返回相关原文，不会智能模仿语气。
-如需模型生成，在本地 `.env` 配置 `LLM_BASE_URL`、`LLM_API_KEY` 和 `LLM_MODEL`，重启后生效。
-普通问答与协作模式保持原有行为，**不会读取私有工作区**。
+1. 登记 document/project/conversation/event 来源，选择敏感级别；可绑定已确认的对象。
+2. 核对来源后单独授权。登记不会自动授权；来源撤销只阻止后续提取，不删除已有记忆。
+3. 粘贴原文或读取本地 UTF-8 `.txt`/`.md` 文件。文件读取只填入草稿，点击提取才提交到本地 API。
+   `fields` 接受 `fact identity.name: Alex Example` 这样的精确字段；`notes` 保留字面段落。
+   提取内容最多 80,000 Unicode 字符且 UTF-8 编码不超过 200,000 字节。
+4. 提取产生待确认候选，不自动接受。失败记录保留输入，可使用同一来源、内容和模式重试；
+   提取记录展示去重、冲突和分阶段结果。
+5. 在待确认/已确认/已替代筛选中逐条审核。冲突时显示新旧内容，明确替换后才提交；
+   来源授权、提取、确认、替换、编辑与工作台删除均绑定已查看的修订版本。
+6. “查看来源与历史”展示精确原文、来源/记忆版本、内容哈希、码点区间和修订快照。
+   来源原文对应提取时的版本，不代表之后人工编辑的内容仍与原文完全一致。
+7. 在“依据个人记忆提问”中调用本地 `/ask`，查看当前依据与不确定状态。该路径不调用模型、
+   不保存聊天历史；敏感依据需要每次提问明确勾选，成功后勾选自动清除。
+8. 修改已确认记忆使其重新待确认，并移除页面上已有的回答。删除需再次核对内容和修订版本，清除所选记忆及其快照/原文；
+   已独立保存的聊天、导出或其他记录不随之消失。外部修改需要显式刷新工作台。
 
-### 4. 更新、冲突与删除
+密钥与所有草稿只保存在页面内存中。锁定或关闭工作台会取消在途请求并清除工作台状态；
+锁定同时清除工作区密钥。HTTP 请求取消不保证服务器已开始的事务也回滚；重新打开后应刷新核对。
+语言切换只改变界面，不重新请求数据、不丢失草稿。旧档案/聊天界面通过关闭工作台返回。
+工作台内“管理身份与关系”提供对象创建/编辑/确认、别名解析、主人绑定、关系审核和精确删除范围预览；
+保留策略、便携导入和工具审批仍由 API/CLI 提供。
+可选“模型辅助原文候选”须授权精确来源选择器、模型目标与本次原文，并单独允许敏感数据；候选仍须审核。
+成功后保留页面中的完整原文，供核对否定、他人信息及字段含义，不把原文全文新增到数据库。详见[受控模型提取](SEMANTIC_LEARNING.md)。
 
-- 修改已确认条目后，它重新变为待确认状态，旧内容立即退出记忆检索。
-- 相同 `kind + key` 的已确认条目视为冲突，必须明确确认替换；替换在数据库事务内完成。
+### 身份对象与关系审核
+
+- 在工作台内打开“管理身份与关系”，创建人物、项目等七类候选对象，显式填写别名；确认后才可被来源或问答引用。
+- 精确重复默认复用对象；“明确创建独立身份”是一次性的显式选择。别名有歧义时返回多个 ID，不自动合并。
+- 主人绑定先展示新旧对象，再提交当前绑定 ID 与目标人物修订版本；只有已确认人物可绑定。改变主人的对象类型前须先解除绑定。
+- 关系使用两个已确认对象、明确关系标识和已确认记忆的精确版本；创建与确认分开，任何已查看版本变化都会被拒绝。
+- 当前关系视图执行现有隐私、时间、认知状态和依据版本筛选。敏感别名/邻接检索需本次查询明确勾选；管理列表仍是主人级检查界面。
+- 对象/关系删除先显示范围和摘要，再单独确认。对象范围包含历史关联记忆及依赖这些记忆的关系；新依赖或任何范围变化使摘要过期，必须重新预览。
+- 删除关系不删除其依据或端点；删除对象不清除独立聊天、导出、备份和工具结果。详见[身份与时间契约](IDENTITY_TIME.md)。
+- 提问表单可选择已确认对象限定主体；未指定对象的主人问题由主人绑定决定。页面关闭/锁定清除草稿，语言切换保留草稿。
+- 行内删除/主人绑定审核会获得键盘焦点；Escape 可取消并返回发起控件。预览标题显示具体对象/关系，而不仅是 ID。
+- `make e2e` 运行独立无头浏览器、虚构临时工作区和生产构建，不操作正在使用的浏览器或真实资料；参见[可重复浏览器验收](IDENTITY_TIME.md#repeatable-browser-acceptance)。
+
+### 4. 聊天与确认
+
+在**私有聊天**输入 `记住：偏好 response.style = 给导师写项目更新，先说结论`，或从一条自己的聊天消息中提取**原文摘录**。
+确认前，候选不会用于回答；用 `更正：` 和相同的类型、字段与项目范围可提出替换。
+可开启规则式记忆建议，但默认关闭，不自动吸收普通聊天。选择已确认项目后，可定义该项目独有的偏好，
+不覆盖个人默认。详见[对话长期记忆](CHAT_MEMORY.md)。
+
+本地模式只返回相关原文，不生成个性化草稿。模型生成需要配置三个 `LLM_*` 值、审核披露策略，
+并对当次请求明确授权；参见[披露契约](DISCLOSURE.md)。公开问答和协作不会读取私有工作区。
+
+### 5. 更新、冲突与删除
+
+- 修改已确认条目后，它重新变为待确认状态，旧内容立即退出记忆检索，但保留为只读版本快照。
+- 相同 `kind + key` 的已确认条目视为冲突，必须明确确认替换；替换在数据库事务内完成，旧条目变为 `superseded`，不会再用于回答。
+- 工作台提供修订历史和已替代条目的只读浏览；历史恢复仍通过 API/CLI 操作，会创建新的待确认候选，不直接复活旧记忆。
 - 不同字段之间的语义矛盾尚不自动识别；请使用一致的字段命名。
-- 删除记忆后不再用于生成。聊天记录中已有的原文仍在，可另行清空全部聊天。
+- 删除记忆会同时删除该条目的全部版本快照。被替代条目和恢复产生的候选是独立记录，需要分别删除；删除新条目不会重新激活旧条目。聊天记录中已有的原文仍在，可另行清空全部聊天。
 - 历史聊天持久化用于显示（最近 100 条），本版不自动重新发送历史聊天给模型，避免删除的记忆通过旧对话重新进入上下文。因此不是完整的多轮指代对话。
-- 导出包含所有档案、记忆与完整聊天，请将导出文件视作私有资料。当前不提供导入接口。
+- 导出版本 `8` 包含所有活跃与已替代记忆、版本历史、完整聊天和学习来源等状态；通过同一数据库快照读取。便携导入可通过 API/CLI 审核摘要后执行，旧导出不会被后续删除追溯清除。
 - 清空聊天不会删除记忆；删除所有本地数据时，先停止后端，再删除 `private/`，重新初始化会生成新密钥。
 
-### 5. 隐私与发布
+### 6. 隐私与发布
 
 默认路径：`private/twin.sqlite3`、`private/knowledge/`、`private/personal.env`。
 Git 和 Docker 构建上下文都排除 `private/`、环境文件和数据库文件。
 不要把 `PERSONAL_DATA_DIR` 改成公开目录；自定义目录需要自行添加忽略规则。
 
-**本地保存不等于不发送到模型。** 启用模型后，私有问题、检索到的已确认记忆（包括偏好）、
-私有及公开知识片段会发送给你配置的服务商。密钥验证仅限制工作区访问，不会加密磁盘数据库。
+私有聊天默认本地处理，配置模型凭据不会自动启用披露。只有已授权目标／数据范围与每次请求的
+`allow_provider: true` 同时满足时，问题和筛选后的上下文才会发送给服务商。密钥验证仅限制工作区访问，不会加密磁盘数据库。
 请保持服务绑定 `127.0.0.1`；这是单用户工作区，不是具备用户隔离的公网多租户服务。
 若要只在本机处理信息，请清空三个 `LLM_*` 配置，使用本地摘录模式。
 
@@ -99,17 +140,50 @@ This is an opt-in, single-owner local workspace. Install the dependencies using 
 [repository quick start](../README.md#quick-start), then run the initialization and launch commands above.
 Unlock the new panel using `PERSONAL_TOKEN` from `private/personal.env`.
 The initializer is idempotent: it preserves existing workspace data and `.env`, while recreating any missing non-secret scaffolding.
+Private-workspace controls and data-destination disclosures follow the selected interface language.
+Changing locale does not relock or refetch the workspace, and it preserves the in-memory token and
+drafts. Memory/chat content, keys, and API type values remain verbatim.
 
-Add profile fields as typed entries (`fact`, `preference`, `event`, `decision`, `project`, `skill`,
-`working_pattern`). All new or edited
-entries are pending until confirmed. Use `Remember: ...` in private chat to propose a preference,
-then review it in the memory list. The default extracted key is `conversation.preference`; edit it
-to a specific key before confirmation when needed. Matching kind/key conflicts require explicit
-replacement. Cross-key semantic contradiction detection is not implemented.
+Typed entries accept `fact`, `preference`, `event`, `decision`, `project`, `skill`, and
+`working_pattern`. The last three hold candidates proposed from reviewed trace imports.
+All new or edited entries are pending until confirmed.
 
-Confirmed preferences are eligible without lexical overlap; other entries use lexical
-retrieval. At most 20 memory entries are selected, and provider context is bounded by
-`MAX_CONTEXT_CHARS`. Optional private Markdown belongs in `private/knowledge/`, never the tracked `knowledge/`.
+Open the **review workbench** after unlocking to register and independently approve a source,
+read a local UTF-8 text file into a draft (no upload until ingestion), extract exact fields or literal
+paragraphs into pending candidates, review explicit old/new conflicts and inspect exact origins/revision
+history. Source review, ingestion, confirmation/replacement, edit and workbench deletion all bind to
+reviewed revisions. Failed runs retain the draft for an explicit same-content retry. Superseded records
+are read-only but remain inspectable and individually deletable. Existing confirmed entities can scope
+sources; **Manage identities & relationships** now provides identity/alias/owner/relationship review,
+revision histories, current-neighbour context and digest-reviewed cascade deletion. Retention, import
+and tool approvals remain API/CLI capabilities.
+
+Optional **Model-assisted quotations** uses a separate exact-source/target/content disclosure gate;
+local fields/paragraphs never call a provider. Model candidates stay pending and the full source draft
+remains locally available for meaning review; see [semantic learning](SEMANTIC_LEARNING.md).
+
+The workbench's **Ask with evidence** calls the provider-free atomic `/ask` route and shows current
+attributed evidence and uncertainty. Sensitive context requires a checkbox for that question; it resets
+after success. These answers do not persist a chat transcript. Any workbench mutation clears its prior
+answer/provenance. External edits require explicit refresh. Closing the workbench or locking unmounts
+it, discards its drafts and aborts its requests; locking also clears the token. Aborting HTTP delivery is
+not a guarantee that an already-started server transaction was undone; refresh after reopening.
+Close the workbench to return to the compatibility memory/chat form. No credentials or private
+content are written to browser storage. All nine supported interface locales cover the workbench.
+
+Add typed facts, preferences, events or decisions from the profile form, an exact owner
+turn excerpt, or an explicit command such as `Remember: preference response.style = Lead with the
+conclusion`. Confirm a candidate before it can affect later chats. `Correct:` proposes a replacement
+through the same revision-aware review. For project-specific overrides, choose a confirmed project
+scope in the private chat. Optional local suggestions require a checkbox and never confirm
+themselves. See [long-term chat memory](CHAT_MEMORY.md) for controls and limitations.
+
+Current chat ranks relevant approved records and reserves context for eligible preferences. A
+same-key project preference takes precedence only inside that project. Up to 20 memory matches
+are selected; provider context also respects `MAX_CONTEXT_CHARS`. A broad presentation default
+may guide generation when there is no lexical overlap, but does not become a local extractive
+answer to an unrelated question.
+Optional private Markdown belongs in `private/knowledge/`, never the tracked `knowledge/`.
 Private Markdown is operator-maintained knowledge and bypasses candidate confirmation.
 The public chat and collaboration endpoints never read this workspace.
 
@@ -139,12 +213,15 @@ while using an index stored there; an unavailable or mismatched index fails veri
 The database persists chat for display (latest 100 turns); it does not replay history to the model,
 so deleted memory cannot leak back through old turns. This first version does not provide full
 multi-turn contextual conversation. Deleting memory does not erase its existing chat transcript:
-use Clear history separately. Export includes the full transcript and all entries; import is not
-implemented. Stop the backend before removing `private/` to erase the entire workspace and token.
+use Clear history separately. Deleting a record purges its own revision snapshots, not independently
+restored candidates or archived replacements. Export version `8` includes the full transcript,
+active and archived entries, and revision snapshots. [Portable import and explicit owner erasure](OWNER_CONTROL.md)
+are available through Core/API/CLI. Stop the backend before removing `private/` and its
+`personal.env` token to erase the initialized filesystem workspace.
 
 Without model credentials, answers are excerpts, not personalized generation. Configure the three
-`LLM_*` values in your ignored `.env` and restart for generated answers. When enabled, your question,
-retrieved memories/preferences and knowledge excerpts are sent to that provider. The browser token
+`LLM_*` values in your ignored `.env`, review the [disclosure policy](DISCLOSURE.md), and explicitly
+opt in on each request for generated answers. Only permitted context is sent to that provider. The browser token
 is held only in page memory. The database is not encrypted. Bind services to loopback; this is not
 a public multi-user deployment. Git exclusion does not imply provider privacy or erase Git history.
 
@@ -160,17 +237,126 @@ The token must contain at least 32 characters. Disabled mode returns 404, failed
 
 | Method | Path (prefix `/api/v1/personal`) | Purpose |
 | --- | --- | --- |
-| GET | `/entries` | List profile and memory entries with provenance and timestamps |
+| GET | `/entries` | List active entries; `?include_superseded=true` includes archives |
 | POST | `/entries` | Add pending `{kind, key, content}` |
-| POST | `/entries/{id}/edit` | Replace fields and return to pending |
+| POST | `/entries/{id}/edit` | Replace fields, snapshot the change, and return to pending |
+| GET | `/entries/{id}/history` | Read ordered revision snapshots |
+| POST | `/entries/{id}/restore` | Propose a historical `{revision, expected_revision?}` as a new pending entry |
 | POST | `/entries/{id}/confirm` | Confirm with `{replace_ids: []}`; 409 reports conflicts |
-| POST | `/entries/{id}/delete` | Delete memory |
+| POST | `/entries/{id}/delete` | Delete a record and its snapshots; optional `{expected_revision}` rejects stale deletion |
 | GET | `/corpus/status` | Verify the configured immutable owner-only corpus and return aggregate status |
 | POST | `/corpus/search` | Search bounded review-only owner evidence with `{query, limit?}` |
 | GET | `/history` | Latest 100 persisted turns |
 | POST | `/history/clear` | Delete all turns, retain entries |
-| GET | `/export` | Export all entries and turns |
-| POST | `/chat` | Private grounded answer for `{question}` and persist exchange |
+| POST | `/history/{turn_id}/capture` | Propose an exact excerpt of a stored owner turn |
+| GET | `/export` | Version-8 snapshot including learning provenance and forgetting digests |
+| POST | `/chat` | Scoped private grounded chat and local memory proposals |
+
+### Typed memory contract / 结构化记忆契约
+
+The independent [memory core](../backend/app/memory.py) owns the lifecycle, SQLite transactions,
+source links, snapshots, and retrieval. It does not import FastAPI, HTTP clients, configuration,
+or the model provider. The [personal API](../backend/app/personal.py) is a transport adapter;
+`MemoryNotFound` and `MemoryConflict` domain errors map to HTTP 404 and 409.
+
+OpenAPI describes `MemoryRecord`, `MemoryRevision`, `StoredTurn`, and `MemoryExport`.
+A memory contains `kind`, `key`, `content`, server-generated `id`, `source`, `status`
+(`pending`, `confirmed`, or `superseded`), `sensitivity` (`public`, `private`, `sensitive`), UTC `created_at` / `updated_at` timestamps,
+a monotonically increasing `revision`, and nullable `superseded_by`.
+The default list excludes superseded records; export includes them.
+
+- Manual sources are `manual`; explicit chat proposals and literal captures use `turn:<id>`.
+- An edit attributes the new version to `manual`, while snapshots preserve the previous source.
+- Restore creates a **new pending record** with `source = memory:<original-id>@<revision>`.
+  Its confirmation still needs explicit replacement if the original kind/key has a current record.
+- `created`, `edited`, `confirmed`, and `superseded` snapshots are stored with their mutations
+  in the same transaction. Repeated confirmation without a version precondition is a no-op.
+- Existing databases migrate automatically. Their known state becomes a `baseline` snapshot;
+  pre-migration edits or deleted replacements cannot be reconstructed.
+- The source turn, explicitly requested candidate, and initial snapshot are written atomically.
+  Ordinary conversation still creates no active memory; opt-in rules can suggest verbatim candidates.
+  Chat capture text remains capped at 2,000 characters.
+
+Entry creation rejects client-set provenance, IDs, timestamps, revision, or status.
+Confirmation rejects unknown fields, duplicate or blank replacement IDs, non-string IDs,
+IDs longer than 100 characters, and lists longer than 100 IDs with HTTP 422.
+Valid but mismatched conflict sets return HTTP 409 with `conflict_ids` and `conflict_revisions`.
+
+For race-safe review, clients should send `expected_revision` on edit, confirmation, restore and deletion.
+Confirmation can also send `replace_revisions: {"<conflict-id>": <reviewed-revision>}`.
+The server compares these preconditions inside the write transaction; stale requests return 409
+without changing any entries or snapshots. These fields are optional for compatibility with
+existing clients; callers omitting them do **not** receive stale-review protection.
+
+Export uses version `8` (separate from the repository release version) and includes `revisions`,
+`sources`, `ingestion_runs`, `origins`, and `forgotten` digest records.
+Entries, full history, and snapshots are read in one database transaction. An older version-1 or version-2
+export consumer must be updated; the existing reference UI downloads the JSON without parsing it.
+The [portable import contract](OWNER_CONTROL.md) accepts supported snapshots into an empty
+workspace through exact digest review; execution permissions/plans are inert archives, not restored grants.
+
+Deletion removes the selected record, all of its snapshots, and its ingestion excerpts in one transaction.
+With an optional `expected_revision`, deletion rejects a changed or missing record before any effect;
+legacy no-body/unconditioned deletes retain their idempotent behavior.
+Opaque digests of current and historical kind/key/content are retained to block automatic re-ingestion. It does not
+cascade to separate archived/restored records, transcript text, previous exports, or provider data.
+A deliberate manual re-add remains possible; replay of an earlier ingestion cannot recreate the record.
+A historical `source` or `superseded_by` ID can refer to a record subsequently deleted by its owner.
+Retrieval reads only current confirmed records, never snapshots or chat history. Deleting a
+replacement never makes an archived record current again. Already-running generation is not
+cancelled by a later deletion.
+
+记忆核心可脱离 HTTP 服务和模型服务独立运行。创建、修改、确认、替代的快照与状态变更在同一
+事务提交；旧数据库自动迁移为已知状态的基线，不伪造之前的变化历史。API 默认只列出活跃条目，
+历史和已替代条目可显式查询；它们不参与回答。恢复只创建来源可追溯的新候选，仍须确认。
+删除会清除所选条目及其全部快照，不自动删除独立的恢复候选、已替代条目或聊天原文。
+
+### Structured-memory sensitivity / 结构化记忆敏感性
+
+Structured records default to `private`. `sensitive` records are excluded from `Store.context`
+and private chat unless the owner explicitly sets `allow_sensitive=True` / `{"allow_sensitive": true}`.
+Provider transmission additionally requires an enabled matching disclosure policy and
+`allow_provider: true`; sensitive data must also be permitted by its labels. CLI recall is local and never calls a provider. Source labels become a
+floor for extracted candidates; cross-source duplicate pending candidates retain the highest label.
+Edits without an explicit sensitivity field preserve the label, and restoration never implicitly
+lowers the current classification. Label lowering requires a separate explicit owner edit.
+
+Labels do not automatically classify PII, redact the owner's question, or classify manually maintained
+private Markdown. The [disclosure policy](DISCLOSURE.md) additionally bounds document namespaces/paths and provider targets.
+The review workbench offers per-question sensitive-evidence opt-in for the local `/ask` route.
+It never enables provider disclosure. The older private chat form remains local and does not opt in to sensitive context.
+
+### Pure Agent verification / 纯 Agent 验证
+
+Run from the repository root, without credentials or a running server:
+
+```bash
+make evaluate-memory
+```
+
+Expected: `MEMORY_EVAL 18/18 passed`. The synthetic longitudinal cases cover positive retrieval,
+pending exclusion, unsupported queries, correction, stale approval, supersession, provenance,
+restore-as-candidate, deletion, preference fidelity, and empty export after forgetting.
+`make evaluate` runs these cases alongside the existing collaboration evaluation.
+These deterministic checks do not measure semantic entailment, embedding quality, or personality imitation.
+
+
+### Controlled learning
+
+Approved-source registration, candidate extraction, exact provenance, deduplication, replay,
+failed-run recovery, revocation, CLI use, and forgetting semantics are described in
+[Controlled Agent learning](LEARNING.md). The review workbench exposes source registration/review, ingestion, candidate confirmation and provenance;
+advanced learning-policy configuration remains a Core/API/CLI capability.
+
+
+Entity binding, declared confidence, belief states, validity/knowledge time and owner-reviewed retention
+are documented in [Structured identity and time](IDENTITY_TIME.md).
+
+
+The grounded-local `ask`/`retrieve`/`verify` Agent contracts, owner binding, source-value verification,
+and bilingual/temporal retrieval are described in [Personal retrieval](PERSONAL_RETRIEVAL.md).
+The older private chat endpoint remains a separate compatibility contract.
+
 
 ## Prompt and skill improvement
 
@@ -179,3 +365,18 @@ work archive. It uses a local Ollama model, keeps held-out test cases outside
 search/reflection, and saves candidate proposals without changing original skills
 or memories. See [GEPA optimization](OPTIMIZATION.md) for setup, budgets, scoring
 limitations, and private receipt storage.
+
+## Local owner agency
+
+Snapshot version `8` additionally includes `tool_permissions`, `action_plans`, `tasks`, `notes`,
+and `action_events`. Tool defaults remain disabled. These are independent private data copies;
+memory deletion does not delete task/note/plan arguments. The [agency contracts](AGENCY.md)
+document explicit approval, inspection, rollback and current deletion boundaries.
+
+
+## Portability, audit and independent-copy control
+
+Snapshot version `8` adds `audit_events`, `import_archives` and `ingestion_replay_keys`.
+The [owner-control contracts](OWNER_CONTROL.md) describe exact reviewed import into an empty
+workspace, non-restoration of execution authority, content-free operational audit and explicit
+source/action/output/archive/transcript/SQLite-state deletion boundaries.

@@ -1,4 +1,4 @@
-.PHONY: setup dev test lint format docs evaluate knowledge-check build lock lock-check version-check
+.PHONY: setup dev test e2e lint audit format docs evaluate evaluate-memory evaluate-learning evaluate-semantic evaluate-identity evaluate-retrieval evaluate-chat-recall evaluate-agency evaluate-owner-control evaluate-longitudinal knowledge-check build lock lock-check version-check
 
 UV_PROJECT_ENVIRONMENT ?= $(CURDIR)/.venv
 
@@ -20,10 +20,16 @@ test:
 	.venv/bin/pytest backend/tests
 	cd frontend && npm test
 
+e2e:
+	cd frontend && npm run test:e2e
+
 lint: lock-check version-check
 	.venv/bin/ruff check backend scripts
 	.venv/bin/ruff format --check backend scripts
 	cd frontend && npm run lint && npm run typecheck
+
+audit:
+	cd frontend && npm run audit:deps
 
 format:
 	.venv/bin/ruff format backend
@@ -36,6 +42,42 @@ version-check:
 
 evaluate:
 	.venv/bin/python scripts/evaluate_collaboration.py
+	.venv/bin/python scripts/evaluate_memory.py
+	.venv/bin/python scripts/evaluate_learning.py
+	.venv/bin/python scripts/evaluate_semantic_learning.py --check-fixture
+	.venv/bin/python scripts/evaluate_identity.py
+	.venv/bin/python scripts/evaluate_retrieval.py
+	.venv/bin/python scripts/evaluate_chat_recall.py
+	.venv/bin/python scripts/evaluate_agency.py
+	.venv/bin/python scripts/evaluate_owner_control.py
+	.venv/bin/python scripts/evaluate_longitudinal.py
+
+evaluate-memory:
+	.venv/bin/python scripts/evaluate_memory.py
+
+evaluate-learning:
+	.venv/bin/python scripts/evaluate_learning.py
+
+evaluate-semantic:
+	.venv/bin/python scripts/evaluate_semantic_learning.py --check-fixture
+
+evaluate-identity:
+	.venv/bin/python scripts/evaluate_identity.py
+
+evaluate-retrieval:
+	.venv/bin/python scripts/evaluate_retrieval.py
+
+evaluate-chat-recall:
+	.venv/bin/python scripts/evaluate_chat_recall.py
+
+evaluate-agency:
+	.venv/bin/python scripts/evaluate_agency.py
+
+evaluate-owner-control:
+	.venv/bin/python scripts/evaluate_owner_control.py
+
+evaluate-longitudinal:
+	.venv/bin/python scripts/evaluate_longitudinal.py
 
 knowledge-check:
 	.venv/bin/python scripts/check_knowledge.py

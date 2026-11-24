@@ -80,7 +80,7 @@ Agent-Me does not claim to solve all of those problems today. It provides a conc
 
 ### Reviewable identity and memory
 
-The current memory substrate is version-controlled Markdown: small, explicit, and inspectable. It gives the twin a stable body of personal knowledge instead of treating every conversation as isolated. An optional private workspace adds SQLite-backed profile entries, persisted chat transcripts, and user-confirmed memories. Automatic temporal reasoning and richer identity models remain future work.
+The current memory substrate is version-controlled Markdown: small, explicit, and inspectable. It gives the twin a stable body of personal knowledge instead of treating every conversation as isolated. An optional private workspace adds SQLite-backed typed memory, reviewed identity/relationships, declared valid and event times, revision history, persisted chat transcripts, and owner-confirmed learning. A browser review workbench makes approved-source ingestion, conflict review, provenance and local evidence-grounded answers accessible without the CLI. Optional [scoped model-assisted extraction](docs/SEMANTIC_LEARNING.md) proposes pending classifications over exact source quotations; unconstrained semantic inference remains future work. Its workbench/API and [explicit-file CLI](docs/SEMANTIC_LEARNING.md#explicit-file-local-cli) require separately reviewed disclosure scope and per-attempt consent.
 
 ### Evidence-grounded responses
 
@@ -122,7 +122,7 @@ Before an answer is returned, implemented checks can validate citation paths, ev
 | Public trace | Makes execution inspectable | Safe stage summaries, outcomes, and metrics |
 | Evaluation | Measures behavior beyond a demo | Versioned fixtures and deterministic runner |
 
-Knowledge graphs, richer structured memory, typed intent routing, and broader tool calling are natural extensions of this model, but are not presented here as finished capabilities.
+The opt-in personal Agent additionally implements evidence-linked relationships, structured memory, typed know/recommend/act routing and three owner-approved local task/note tools. The [action workbench](docs/AGENCY_WORKBENCH.md) exposes their default-off permissions, independently reviewed plans/approval/execution, local outputs and exact-effect undo. Arbitrary external tool integrations and unconstrained semantic inference remain future work; see the [implementation ledger](docs/AGENT_IMPLEMENTATION.md) and [private workspace guide](docs/PERSONAL.md).
 
 ## Architecture
 
@@ -182,6 +182,7 @@ The checked-in fixtures cover supported, unsupported, adversarial, and boundary 
 ```bash
 make test
 make evaluate
+make evaluate-semantic # Validate authored semantic benchmark labels; no model call/score
 .venv/bin/python scripts/evaluate_collaboration.py --workflow verified --json
 ```
 
@@ -351,7 +352,11 @@ to the user.
 
 ## Private AI Twin workspace
 
-Build a local profile, persist conversations, and confirm editable long-term memories. Personal mode is opt-in and token-protected; public chat never reads the private workspace. See the [English and Chinese setup guide](docs/PERSONAL.md).
+Build a local profile, persist conversations, and confirm editable long-term memories.
+Private chat can remember an exact owner message, suggest a reviewable candidate, apply
+project-specific preferences across chats, and forget records without replaying old transcripts.
+Personal mode is opt-in and token-protected; public chat never reads the private workspace.
+See the [setup guide](docs/PERSONAL.md) and [long-term memory walkthrough](docs/CHAT_MEMORY.md).
 
 ## Use Agent-Me from your agent
 

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { messages, resolveLocale, supportedLocales } from "./i18n";
 
+function leafStrings(value: object): string[] {
+  return Object.values(value).flatMap((item) =>
+    typeof item === "string" ? [item] : leafStrings(item),
+  );
+}
+
 describe("localization", () => {
   it.each([
     ["zh-Hans-CN", "zh-CN"],
@@ -20,7 +26,40 @@ describe("localization", () => {
 
     for (const { code } of supportedLocales) {
       expect(Object.keys(messages[code]).sort()).toEqual(canonicalKeys);
-      expect(Object.values(messages[code]).every((value) => value.trim().length > 0)).toBe(true);
+      expect(leafStrings(messages[code]).every((value) => value.trim().length > 0)).toBe(true);
+      expect(Object.keys(messages[code].personalWorkspace.governance).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.governance).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.migration).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.migration).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.erasure).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.erasure).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.agency).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.agency).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.semantic).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.semantic).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.identity).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.identity).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.review).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.review).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace.chatMemory).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace.chatMemory).sort(),
+      );
+      expect(Object.keys(messages[code].personalWorkspace).sort()).toEqual(
+        Object.keys(messages.en.personalWorkspace).sort(),
+      );
+    }
+  });
+
+  it("keeps a backend-supported literal prefix in localized private chat guidance", () => {
+    for (const { code } of supportedLocales) {
+      expect(messages[code].personalWorkspace.chatMemory.guidance).toMatch(/Remember:|记住：|記住：/);
     }
   });
 });

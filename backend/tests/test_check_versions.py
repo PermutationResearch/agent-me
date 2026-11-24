@@ -112,3 +112,81 @@ def test_stable_version_rules_remain(repository, capsys, version):
     (repository / "VERSION").write_text(version, encoding="utf-8")
     assert check_versions.main() == 1
     assert "VERSION: expected a stable MAJOR.MINOR.PATCH value" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("version", ["2.0.1١", "2.1２.0", "2９.0.0"])
+def test_non_ascii_decimal_digits_are_not_stable_versions(repository, capsys, version):
+    # All metadata agrees, so the format check must reject the release on its own.
+    for filename in (
+        "VERSION",
+        "backend/pyproject.toml",
+        "backend/app/__init__.py",
+        "backend/uv.lock",
+        "frontend/package.json",
+        "frontend/package-lock.json",
+    ):
+        target = repository / filename
+        target.write_text(
+            target.read_text(encoding="utf-8").replace("2.0.0", version), encoding="utf-8"
+        )
+
+    assert check_versions.main() == 1
+    assert "VERSION: expected a stable MAJOR.MINOR.PATCH value" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("filename", "extra"),
+    [
+        ("backend/app/main.py", 'app = FastAPI(version="1.0.0")\n'),
+        ("backend/app/main.py", "app: FastAPI = Other()\n"),
+        ("backend/app/__init__.py", '__version__ = "1.0.0"\n'),
+        ("backend/app/__init__.py", '__version__: str = "1.0.0"\n'),
+    ],
+)
+def test_later_direct_binding_cannot_hide_metadata_drift(repository, capsys, filename, extra):
+    target = repository / filename
+    target.write_text(target.read_text(encoding="utf-8") + extra, encoding="utf-8")
+    assert check_versions.main() == 1
+    assert f"{filename}:" in capsys.readouterr().err
+
+
+def test_final_annotated_assignment_can_correct_an_earlier_binding(repository, capsys):
+    (repository / "backend/app/__init__.py").write_text(
+        '__version__ = "1.0.0"\n__version__: str = "2.0.0"\n', encoding="utf-8"
+    )
+    (repository / "backend/app/main.py").write_text(
+        "app = placeholder\napp: FastAPI = FastAPI(version=__version__)\napp: FastAPI\n",
+        encoding="utf-8",
+    )
+    assert check_versions.main() == 0
+    assert "Version consistency check passed" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    ("filename", "content", "diagnostic"),
+    [
+        ("VERSION", None, "cannot read"),
+        ("backend/pyproject.toml", "[project\n", "invalid TOML"),
+        ("backend/pyproject.toml", 'project = "invalid"\n', "expected '2.0.0', found None"),
+        ("backend/app/__init__.py", "__version__ = (", "invalid Python"),
+        ("backend/app/main.py", None, "cannot read"),
+        ("backend/uv.lock", "package = {}\n", "expected '2.0.0', found None"),
+        ("frontend/package.json", "{", "invalid JSON"),
+        ("frontend/package.json", "null", "expected a metadata object"),
+        ("frontend/package-lock.json", '{"version":"2.0.0", "packages":null}', "(package):"),
+    ],
+)
+def test_bad_release_metadata_has_file_specific_diagnostics(
+    repository, capsys, filename, content, diagnostic
+):
+    target = repository / filename
+    if content is None:
+        target.unlink()
+    else:
+        target.write_text(content, encoding="utf-8")
+
+    assert check_versions.main() == 1
+    errors = capsys.readouterr().err
+    assert "Version consistency check failed:" in errors
+    assert any(filename in line and diagnostic in line for line in errors.splitlines())
+    assert "Traceback" not in errors

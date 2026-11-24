@@ -9,13 +9,22 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from . import __version__
+from .audit import AuditLog
 from .collaboration import CollaborationOrchestrator
 from .config import Settings, get_settings
+from .followup_retrieval import retrieve_chat_context
 from .knowledge import KnowledgeBase, KnowledgeLoadError
+from .memory import (
+    MemoryConflict,
+    MemoryError,
+    MemoryInputError,
+    MemoryNotFound,
+    MemoryPermissionDenied,
+)
 from .optimization import join_optimizations
 from .optimization import router as optimization_router
 from .personal import router as personal_router
-from .provider import ProviderError, generate_answer
+from .provider import ProviderError, context_matches, generate_answer
 from .public_trace_market import public_route, verify_public_storage
 from .request_id import RequestIDMiddleware
 from .request_limits import RequestBodyLimitMiddleware
@@ -82,6 +91,18 @@ async def public_intake_boundary(request: Request, call_next):
 async def private_no_cache(request: Request, call_next):
     """Prevent storage of responses that can contain personal knowledge."""
     response = await call_next(request)
+    db = getattr(request.state, "personal_store", None)
+    if db is not None:
+        route = request.scope.get("route")
+        operation = "api." + route.endpoint.__name__
+        outcome = (
+            "succeeded"
+            if response.status_code < 400
+            else "denied"
+            if response.status_code < 500
+            else "failed"
+        )
+        await run_in_threadpool(AuditLog(db).record, operation, outcome, actor="api")
     is_qa_response = request.method == "POST" and request.url.path in {
         "/api/v1/chat",
         "/api/v1/collaborate",
@@ -96,6 +117,60 @@ async def private_no_cache(request: Request, call_next):
     ):
         response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@app.exception_handler(MemoryError)
+async def memory_error_handler(_request: Request, error: MemoryError):
+    detail: str | dict = str(error)
+    if isinstance(error, MemoryConflict) and error.conflicts is not None:
+        detail = {
+            "message": str(error),
+            "conflict_ids": list(error.conflicts),
+            "conflict_revisions": error.conflicts,
+        }
+    status = 409
+    if isinstance(error, MemoryNotFound):
+        status = 404
+    elif isinstance(error, MemoryPermissionDenied):
+        status = 403
+    elif isinstance(error, MemoryInputError):
+        status = 422
+    return JSONResponse(status_code=status, content={"detail": detail})
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request: Request, error: RequestValidationError):
+    if request.url.path.startswith(
+        ("/api/v1/trace-submissions", "/api/v1/buyer/trace-submissions")
+    ):
+        return JSONResponse(
+            status_code=422, content={"detail": "Invalid submission request fields."}
+        )
+    if not request.url.path.startswith("/api/v1/personal"):
+        return await request_validation_exception_handler(request, error)
+
+    # Private validation must not echo document/credential values or produce an
+    # invalid UTF-8 response when JSON contains unpaired Unicode surrogates.
+    def safe(value):
+        return (
+            value.encode("utf-8", "backslashreplace").decode() if isinstance(value, str) else value
+        )
+
+    errors = error.errors()
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": [
+                {
+                    "loc": [safe(part) for part in item["loc"]],
+                    "msg": safe(item["msg"]),
+                    "type": item["type"],
+                }
+                for item in errors[:20]
+            ],
+            "errors_truncated": len(errors) > 20,
+        },
+    )
 
 
 _PROVIDER_ERROR_MESSAGES = {
@@ -215,6 +290,7 @@ async def profile(config: Settings = Depends(get_settings)) -> ProfileResponse:
         name=config.app_name,
         description=config.app_description,
         max_question_chars=config.max_question_chars,
+        max_history_chars=config.max_history_chars,
         external_provider_enabled=config.provider_state == "openai-compatible",
     )
 
@@ -232,12 +308,17 @@ async def chat(payload: ChatRequest, config: Settings = Depends(get_settings)) -
             detail="history exceeds configured limit",
         )
     knowledge = _configured_knowledge_base(config)
-    matches = await run_in_threadpool(knowledge.search, payload.question)
+    matches = await run_in_threadpool(retrieve_chat_context, knowledge, payload, config)
     answer, mode = await generate_answer(
         question=payload.question,
         history=payload.history,
         matches=matches,
         settings=config,
+    )
+    response_matches = (
+        context_matches(matches, config.max_context_chars)
+        if mode == "openai-compatible"
+        else matches
     )
     return ChatResponse(
         answer=answer,
@@ -249,7 +330,7 @@ async def chat(payload: ChatRequest, config: Settings = Depends(get_settings)) -
                 excerpt=match.excerpt,
                 score=match.score,
             )
-            for match in matches
+            for match in response_matches
         ],
     )
 
@@ -295,14 +376,3 @@ async def collaborate(
             for stage in result.trace
         ],
     )
-
-
-@app.exception_handler(RequestValidationError)
-async def safe_market_validation(request: Request, error: RequestValidationError):
-    if request.url.path.startswith(
-        ("/api/v1/trace-submissions", "/api/v1/buyer/trace-submissions")
-    ):
-        return JSONResponse(
-            status_code=422, content={"detail": "Invalid submission request fields."}
-        )
-    return await request_validation_exception_handler(request, error)

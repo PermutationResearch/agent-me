@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
+from itertools import groupby
 from pathlib import Path
 from threading import RLock
 
-from .text import normalized_tokens
+from .text import normalized_tokens, token_spans
 
 _ATX_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)(?:\s+#+)?$")
 _MIN_QUERY_COVERAGE = 0.75
@@ -84,29 +86,113 @@ def _query_tokens(value: str) -> set[str]:
     return normalized_tokens(value) - _STOP_WORDS
 
 
-_H1_HEADING = re.compile(r"^\s{0,3}#\s+(.*?)(?:\s+#+)?\s*$")
+def _excerpt(
+    paragraph: str,
+    query: set[str],
+    limit: int = 1_000,
+    *,
+    anchor: tuple[int, int] | None = None,
+) -> str:
+    """Bound text around an exact locator, when supplied, or the matching terms."""
+    if len(paragraph) <= limit:
+        return paragraph
+
+    # Match the same word/Han token boundaries and normalization as search. Keep
+    # original-text offsets so excerpts remain readable and preserve Unicode.
+    hits = (
+        [anchor]
+        if anchor is not None
+        else [
+            (start, end)
+            for start, end in token_spans(paragraph)
+            if normalized_tokens(paragraph[start:end]) & query
+        ]
+    )
+    if not hits:
+        return paragraph[:limit]
+
+    first, last = hits[0][0], hits[-1][1]
+    all_hits_fit = last - first <= limit
+    if all_hits_fit:
+        start = max(0, min(first - (limit - (last - first)) // 2, len(paragraph) - limit))
+    else:
+        start = max(0, min(first - limit // 2, len(paragraph) - limit))
+    end = start + limit
+    # Avoid cutting a word at either edge when a small adjustment is possible.
+    if start and paragraph[start].isalnum():
+        boundary = next(
+            (index for index in range(start, min(end, start + 100)) if paragraph[index].isspace()),
+            -1,
+        )
+        if boundary >= 0 and boundary + 1 <= first:
+            start = boundary + 1
+            end = start + limit
+    if end < len(paragraph) and paragraph[end - 1].isalnum():
+        boundary = next(
+            (
+                index
+                for index in range(end - 1, max(start, end - 100) - 1, -1)
+                if paragraph[index].isspace()
+            ),
+            -1,
+        )
+        if boundary >= (last if all_hits_fit else hits[0][1]):
+            end = boundary
+    return paragraph[start:end]
+
+
+_H1_HEADING = re.compile(r"^ {0,3}#[ \t]+(.*)$")
+_CODE_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+def _fenced_lines(text: str) -> Iterator[tuple[str, bool]]:
+    """Mark fenced code and its delimiters, including across blank lines."""
+    fence_marker = ""
+    for line in text.splitlines():
+        fence = _CODE_FENCE.match(line)
+        if fence_marker:
+            # A closing fence must match the opening type and be at least as long.
+            if (
+                fence
+                and fence.group(1)[0] == fence_marker[0]
+                and len(fence.group(1)) >= len(fence_marker)
+                and not fence.group(2).strip(" \t")
+            ):
+                fence_marker = ""
+            yield line, True
+        elif fence and (fence.group(1)[0] == "~" or "`" not in fence.group(2)):
+            fence_marker = fence.group(1)
+            yield line, True
+        else:
+            yield line, False
 
 
 def _title(path: Path, text: str) -> str:
-    for line in text.splitlines():
+    for line, fenced in _fenced_lines(text):
+        if fenced:
+            continue
         match = _H1_HEADING.match(line)
         if match:
-            return match.group(1).strip()
+            title = re.sub(r"(?:^|[ \t]+)#+[ \t]*$", "", match.group(1)).strip()
+            if title:
+                return title
     return path.stem.replace("-", " ").replace("_", " ").title()
 
 
 def _content_chunks(text: str) -> list[str]:
     chunks: list[str] = []
-    for block in re.split(r"\n\s*\n", text):
+    for has_text, block in groupby(_fenced_lines(text), key=lambda item: bool(item[0].strip())):
+        if not has_text:
+            continue
         lines: list[str] = []
         has_body = False
-        for raw_line in block.splitlines():
-            heading = _ATX_HEADING.fullmatch(raw_line)
+        for raw_line, fenced in block:
+            heading = None if fenced else _ATX_HEADING.fullmatch(raw_line)
             if heading:
                 lines.append(heading.group(1).strip())
             else:
                 lines.append(raw_line.strip())
-                has_body = has_body or bool(raw_line.strip())
+                has_body = True
         normalized = "\n".join(line for line in lines if line).strip()
         if has_body and normalized:
             chunks.append(normalized)
@@ -275,9 +361,61 @@ class KnowledgeBase:
                 matches.append(
                     Match(
                         document=document,
-                        excerpt=paragraph[:1_000],
+                        excerpt=_excerpt(paragraph, overlap),
                         score=round(score, 4),
                     )
                 )
         matches.sort(key=lambda item: (-item.score, item.document.path, item.excerpt))
         return matches[:limit]
+
+    def revisit_sources(self, references: list[tuple[str, str]], question: str) -> list[Match]:
+        """Locate prior excerpts in current public documents; never read a client path directly."""
+        documents = {document.path: document for document in self.documents()}
+        query = _query_tokens(question)
+        matches: list[Match] = []
+        seen: set[tuple[str, str]] = set()
+        for path, previous_excerpt in references:
+            previous_excerpt = previous_excerpt.strip()
+            reference = path, previous_excerpt
+            if reference in seen or path not in documents:
+                continue
+            seen.add(reference)
+            document = documents[path]
+            chunks = _content_chunks(document.text)
+            if not chunks:
+                continue
+            text = "\n\n".join(chunks)
+            position = text.find(previous_excerpt) if previous_excerpt else -1
+            anchor = None
+            if position >= 0:
+                end = position + len(previous_excerpt)
+                offsets, offset = [], 0
+                for chunk in chunks:
+                    offsets.append((offset, offset + len(chunk)))
+                    offset += len(chunk) + 2
+                covered = [
+                    i for i, (start, stop) in enumerate(offsets) if start < end and stop > position
+                ]
+                if len(covered) > 1:
+                    # A previously expanded window still exists: keep its location stable.
+                    window = text[position:end]
+                else:
+                    index = covered[0]
+                    first_index = max(0, index - 1)
+                    window = "\n\n".join(chunks[first_index : index + 2])
+                    # Incidental query hits in a long neighbor must not evict the
+                    # exact passage that identified this source in the first place.
+                    window_start = offsets[first_index][0]
+                    anchor = position - window_start, end - window_start
+            else:
+                # An edited source (or an unrecognized locator) must use current server text.
+                index = max(
+                    range(len(chunks)), key=lambda i: len(query & normalized_tokens(chunks[i]))
+                )
+                window = "\n\n".join(chunks[max(0, index - 1) : index + 2])
+            excerpt = _excerpt(window, query, limit=3000, anchor=anchor)
+            if any(m.document.path == path and m.excerpt == excerpt for m in matches):
+                continue
+            score = len(query & normalized_tokens(excerpt)) / len(query) if query else 0.0
+            matches.append(Match(document=document, excerpt=excerpt, score=round(score, 4)))
+        return matches

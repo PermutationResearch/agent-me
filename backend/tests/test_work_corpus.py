@@ -3,7 +3,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-from test_personal import HEADERS, make_corpus, personal  # noqa: F401
+from test_personal import HEADERS, make_corpus
 
 
 async def test_work_corpus_is_searchable_and_grounds_private_chat_only(personal):  # noqa: F811

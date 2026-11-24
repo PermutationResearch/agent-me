@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import html
+import os
 import re
 import sys
 import unicodedata
@@ -44,7 +45,8 @@ CHINESE_SECTIONS = (
     "## 完成清单",
     "## 延伸阅读",
 )
-MERGE_MARKERS = ("<<<<<<<", "=======", ">>>>>>>")
+# A bare separator can also be a valid Setext heading underline.
+MERGE_MARKERS = ("<<<<<<<", ">>>>>>>")
 REMOVED_SLUG_CATEGORIES = {
     "Cc",
     "Cf",
@@ -58,7 +60,7 @@ REMOVED_SLUG_CATEGORIES = {
     "Po",
     "Ps",
 }
-ATX_HEADING = re.compile(r"^ {0,3}#{1,6}(?:[ \t]+(.*)|[ \t]*)$")
+ATX_HEADING = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)$")
 SETEXT_HEADING = re.compile(r"^ {0,3}(?:=+|-+)[ \t]*$")
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 INLINE_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
@@ -70,12 +72,22 @@ ESCAPED_MARKUP = re.compile(r"\\([\\`*{}\[\]()#+\-.!_>~|])")
 
 
 def markdown_files() -> list[Path]:
-    return sorted(
-        path
-        for path in ROOT.rglob("*.md")
-        if not any(part.startswith(".") for part in path.relative_to(ROOT).parts)
-        and "node_modules" not in path.parts
-    )
+    # Repository QA must not inspect owner knowledge or generated browser traces.
+    # Prune before traversal rather than filtering after walking private folders.
+    excluded = {"node_modules", "private", "test-results", "playwright-report"}
+    found = []
+    for directory, subdirectories, filenames in os.walk(ROOT):
+        subdirectories[:] = [
+            name
+            for name in subdirectories
+            if not name.startswith(".") and name not in excluded
+        ]
+        found.extend(
+            Path(directory) / name
+            for name in filenames
+            if name.endswith(".md") and not name.startswith(".")
+        )
+    return sorted(found)
 
 
 def destination_path(destination: str) -> str:
@@ -84,11 +96,14 @@ def destination_path(destination: str) -> str:
 
 def destination_parts(destination: str) -> tuple[str, str]:
     value = destination.strip()
-    if value.startswith("<") and value.endswith(">"):
-        value = value[1:-1]
-    value = value.split(maxsplit=1)[0]
+    if not value:
+        return "", ""
+    if value.startswith("<") and ">" in value:
+        value = value[1 : value.index(">")]
+    else:
+        value = value.split(maxsplit=1)[0]
     path, separator, fragment = value.partition("#")
-    return path, fragment if separator else ""
+    return path.partition("?")[0], fragment if separator else ""
 
 
 def heading_text(value: str) -> str:
@@ -132,12 +147,12 @@ def unfenced_lines(text: str) -> list[str]:
                 fence
                 and fence.group(1)[0] == fence_character
                 and len(fence.group(1)) >= fence_length
-                and not line[fence.end() :].strip()
+                and not line[fence.end() :].strip(" \t")
             ):
                 fence_character = ""
                 fence_length = 0
             continue
-        if fence:
+        if fence and (fence.group(1)[0] == "~" or "`" not in line[fence.end() :]):
             marker = fence.group(1)
             fence_character = marker[0]
             fence_length = len(marker)
@@ -145,6 +160,10 @@ def unfenced_lines(text: str) -> list[str]:
             continue
 
     return lines
+
+
+def atx_text(match: re.Match[str]) -> str:
+    return re.sub(r"(?:^|[ \t]+)#+[ \t]*$", "", match.group(2) or "").rstrip()
 
 
 def markdown_headings(text: str) -> list[str]:
@@ -163,9 +182,7 @@ def markdown_headings(text: str) -> list[str]:
 
         match = ATX_HEADING.match(line)
         if match:
-            heading = match.group(1) or ""
-            heading = re.sub(r"[ \t]+#+[ \t]*$", "", heading)
-            headings.append(heading.rstrip())
+            headings.append(atx_text(match))
 
     return headings
 
@@ -256,14 +273,19 @@ def validate_course() -> list[str]:
             if not path.is_file():
                 errors.append(f"{relative}: maintained lesson is missing")
                 continue
-            text = path.read_text(encoding="utf-8")
-            headings = tuple(
-                line.strip() for line in text.splitlines() if line.startswith("## ")
-            )
+            lines = unfenced_lines(path.read_text(encoding="utf-8"))
+            headings = {
+                f"## {atx_text(match)}"
+                for line in lines
+                if (match := ATX_HEADING.match(line)) and match.group(1) == "##"
+            }
             for section in required_sections:
-                if not any(heading.startswith(section) for heading in headings):
+                if section not in headings and not any(
+                    heading.startswith((f"{section}:", f"{section}："))
+                    for heading in headings
+                ):
                     errors.append(f"{relative}: missing required section {section}")
-            if "**Time:**" not in text and "**时间：**" not in text:
+            if not any("**Time:**" in line or "**时间：**" in line for line in lines):
                 errors.append(f"{relative}: missing time metadata")
     return errors
 

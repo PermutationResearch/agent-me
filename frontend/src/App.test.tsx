@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App } from "./App";
 import { downloadCollaborationRun } from "./exportRun";
 import type { CollaborationResponse } from "./api";
+import baseline from "./__fixtures__/collaboration/baseline.json";
+import verified from "./__fixtures__/collaboration/verified.json";
+import { messages, supportedLocales } from "./i18n";
 
 afterEach(() => {
   cleanup();
@@ -33,6 +36,79 @@ it("passes the configured question limit to the private workspace", async () => 
   expect(await screen.findByLabelText(/Private question/)).toHaveAttribute("maxlength", "42");
 });
 
+it("relocalizes an unlocked private workspace without remounting or refetching it", async () => {
+  const privateCalls: Array<[string, RequestInit | undefined]> = [];
+  const entry = {
+    id: "synthetic-entry",
+    key: "profile.alias",
+    kind: "preference",
+    content: "River <b>Example</b>",
+    status: "pending",
+    source: "manual",
+    updated_at: "2026-01-01",
+  };
+  const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+    if (url.endsWith("/api/v1/profile")) {
+      return new Response(JSON.stringify({
+        name: "Synthetic twin",
+        description: "Example",
+        max_question_chars: 8000,
+        external_provider_enabled: true,
+        personal_enabled: true,
+      }), { status: 200 });
+    }
+    privateCalls.push([url, init]);
+    const payload = url.endsWith("/entries") ? [entry]
+      : url.endsWith("/history")
+        ? [{ id: "synthetic-turn", role: "assistant", content: "Untranslated <i>history</i>" }]
+        : {};
+    return new Response(JSON.stringify(payload), { status: 200 });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  render(<App />);
+
+  fireEvent.change(await screen.findByLabelText("Workspace token"), {
+    target: { value: "synthetic-token" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Unlock" }));
+  expect(await screen.findByText("River <b>Example</b>")).toBeInTheDocument();
+  expect(screen.getByText("Untranslated <i>history</i>")).toBeInTheDocument();
+  expect(screen.queryByText("Example", { selector: "b" })).not.toBeInTheDocument();
+  expect(screen.getByRole("list")).toHaveTextContent("Preference");
+  expect(screen.getByText("Assistant")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Edit: profile.alias, memory 1" }));
+  const contentDraft = screen.getByLabelText("Content");
+  const questionDraft = screen.getByLabelText("Private question");
+  fireEvent.change(contentDraft, { target: { value: "Edited synthetic draft" } });
+  fireEvent.change(questionDraft, { target: { value: "Unsent synthetic question" } });
+  const callsBeforeLocaleChange = privateCalls.length;
+
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Language" }), "ja");
+
+  expect(screen.getByRole("region", { name: "プライベートワークスペース" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "編集内容を候補として保存" })).toBeInTheDocument();
+  expect(screen.getByLabelText("内容")).toHaveValue("Edited synthetic draft");
+  expect(screen.getByLabelText("非公開の質問")).toHaveValue("Unsent synthetic question");
+  expect(screen.getByText("River <b>Example</b>")).toBeInTheDocument();
+  expect(screen.getByText("Untranslated <i>history</i>")).toBeInTheDocument();
+  expect(screen.getByRole("list")).toHaveTextContent("設定・好み");
+  expect(screen.getByText("アシスタント")).toBeInTheDocument();
+  expect(privateCalls).toHaveLength(callsBeforeLocaleChange);
+  expect(Object.keys(window.localStorage)).toEqual(["agent-me-locale"]);
+  expect(window.localStorage.getItem("agent-me-locale")).toBe("ja");
+
+  fireEvent.click(screen.getByRole("button", { name: "編集内容を候補として保存" }));
+  await waitFor(() => expect(privateCalls.some(([url]) => url.endsWith("/synthetic-entry/edit"))).toBe(true));
+  const [, editInit] = privateCalls.find(([url]) => url.endsWith("/synthetic-entry/edit"))!;
+  expect(editInit?.headers).toMatchObject({ Authorization: "Bearer synthetic-token" });
+  expect(editInit?.body).toBe(JSON.stringify({
+    kind: "preference",
+    key: "profile.alias",
+    content: "Edited synthetic draft",
+  }));
+});
+
 function routeFetch(chatResponse: object) {
   return vi.fn().mockImplementation((url: string) =>
     url.endsWith("/api/v1/profile")
@@ -40,6 +116,175 @@ function routeFetch(chatResponse: object) {
       : Promise.resolve({ ok: true, json: async () => chatResponse }),
   );
 }
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
+const cancellableWorkflows = [
+  {
+    mode: "standard",
+    endpoint: "/api/v1/chat",
+    payload: { answer: "Retried chat answer", mode: "extractive", sources: [] },
+  },
+  { mode: "collaboration", endpoint: "/api/v1/collaborate", payload: baseline },
+  { mode: "verified", endpoint: "/api/v1/collaborate", payload: verified },
+] as const;
+
+it.each(cancellableWorkflows)("cancels $mode once by keyboard and permits a successful retry", async ({ mode, endpoint, payload }) => {
+  window.history.replaceState(null, "", `/workspace?workflow=${mode}`);
+  const abort = vi.spyOn(AbortController.prototype, "abort");
+  let signal!: AbortSignal;
+  let calls = 0;
+  const fetcher = vi.fn((url: string, init?: RequestInit) => {
+    if (url.endsWith("/api/v1/profile")) return Promise.resolve(profileResponse);
+    calls += 1;
+    if (calls > 1) return Promise.resolve({ ok: true, json: async () => payload });
+    signal = init?.signal as AbortSignal;
+    return new Promise((_resolve, reject) => {
+      signal?.addEventListener("abort", () => reject(new DOMException("Cancelled", "AbortError")), { once: true });
+    });
+  });
+  vi.stubGlobal("fetch", fetcher);
+  const { unmount } = render(<App />);
+  const user = userEvent.setup();
+  const input = screen.getByLabelText(/ask the example/i);
+  expect(screen.queryByRole("button", { name: "Cancel request" })).not.toBeInTheDocument();
+  await user.type(input, "Synthetic question");
+  await user.click(screen.getByRole("button", { name: "Ask" }));
+
+  expect(signal).toBeInstanceOf(AbortSignal);
+  expect(signal.aborted).toBe(false);
+  expect(fetcher).toHaveBeenLastCalledWith(expect.stringContaining(endpoint), expect.objectContaining({ signal }));
+  expect(screen.getByRole("button", { name: "Searching…" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Compare workflows" })).toBeDisabled();
+  expect(screen.getByRole("radio", { name: "Standard Q&A" })).toBeDisabled();
+  // Programmatic or rapid submits must not bypass the disabled button.
+  fireEvent.submit(input.closest("form")!);
+  expect(calls).toBe(1);
+
+  input.focus();
+  await user.tab();
+  const cancel = screen.getByRole("button", { name: "Cancel request" });
+  expect(cancel).toHaveFocus();
+  await user.keyboard("{Enter}");
+
+  expect(signal.aborted).toBe(true);
+  expect(abort).toHaveBeenCalledTimes(1);
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByRole("status")).toHaveTextContent(messages.en.requestCancelled);
+  expect(screen.queryByRole("button", { name: "Cancel request" })).not.toBeInTheDocument();
+  expect(input).toHaveFocus();
+  expect(input).toHaveValue("Synthetic question");
+  expect(input.closest("form")).toHaveAttribute("aria-busy", "false");
+  expect(screen.getByRole("button", { name: "Ask" })).toBeEnabled();
+  expect(screen.getByRole("button", { name: "Compare workflows" })).toBeEnabled();
+
+  await user.click(screen.getByRole("button", { name: "Ask" }));
+  expect(await screen.findByText((_content, element) => element?.textContent === payload.answer, { selector: ".answer > p" })).toBeInTheDocument();
+  expect(calls).toBe(2);
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  unmount();
+  expect(abort.mock.contexts.filter((controller) => controller instanceof AbortController && controller.signal === signal)).toHaveLength(1);
+});
+
+it.each(cancellableWorkflows)("aborts $mode on unmount without reporting a request failure", async ({ mode }) => {
+  window.history.replaceState(null, "", `/workspace?workflow=${mode}`);
+  const abort = vi.spyOn(AbortController.prototype, "abort");
+  const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  let signal!: AbortSignal;
+  vi.stubGlobal("fetch", vi.fn((url: string, init?: RequestInit) => {
+    if (url.endsWith("/api/v1/profile")) return Promise.resolve(profileResponse);
+    signal = init?.signal as AbortSignal;
+    return new Promise((_resolve, reject) => {
+      signal?.addEventListener("abort", () => reject(new DOMException("Unmounted", "AbortError")), { once: true });
+    });
+  }));
+  const { unmount } = render(<App />);
+  fireEvent.change(screen.getByLabelText(/ask the example/i), { target: { value: "Synthetic question" } });
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  await act(async () => unmount());
+  expect(signal.aborted).toBe(true);
+  expect(abort.mock.contexts.filter((controller) => controller instanceof AbortController && controller.signal === signal)).toHaveLength(1);
+  expect(consoleError).not.toHaveBeenCalled();
+});
+
+it.each(["success", "network error", "API error"])("ignores late %s from a cancelled request while a retry is pending", async (outcome) => {
+  const first = deferred<Response>();
+  const retry = deferred<Response>();
+  let calls = 0;
+  vi.stubGlobal("fetch", vi.fn((url: string) => {
+    if (url.endsWith("/api/v1/profile")) return Promise.resolve(profileResponse);
+    calls += 1;
+    // Deliberately ignore abort to model a late response/body completion.
+    return calls === 1 ? first.promise : retry.promise;
+  }));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/ask the example/i), { target: { value: "Synthetic question" } });
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  fireEvent.click(screen.getByRole("button", { name: "Cancel request" }));
+  expect(screen.getByRole("button", { name: "Ask" })).toBeEnabled();
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  await act(async () => {
+    if (outcome === "network error") first.reject(new Error("Late network failure"));
+    else first.resolve(new Response(JSON.stringify(outcome === "API error"
+      ? { detail: "Late API failure" }
+      : { answer: "Stale answer", mode: "extractive", sources: [] }), { status: outcome === "API error" ? 503 : 200 }));
+  });
+  expect(screen.queryByText("Stale answer")).not.toBeInTheDocument();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Searching…" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Cancel request" })).toBeEnabled();
+  expect(calls).toBe(2);
+  await act(async () => retry.resolve(new Response(JSON.stringify({ answer: "Fresh answer", mode: "extractive", sources: [] }))));
+  expect(screen.getByText("Fresh answer", { selector: ".answer > p" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Ask" })).toBeEnabled();
+});
+
+it.each(supportedLocales)("localizes active cancellation and its status in $code", async ({ code }) => {
+  vi.stubGlobal("fetch", vi.fn((url: string) => url.endsWith("/api/v1/profile")
+    ? Promise.resolve(profileResponse) : new Promise(() => undefined)));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/ask the example/i), { target: { value: "Synthetic question" } });
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  fireEvent.change(screen.getByRole("combobox", { name: "Language" }), { target: { value: code } });
+  fireEvent.click(screen.getByRole("button", { name: messages[code].cancelRequest }));
+  expect(screen.getByRole("status")).toHaveTextContent(messages[code].requestCancelled);
+  expect(screen.getByRole("button", { name: messages[code].ask })).toBeEnabled();
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+it.each(cancellableWorkflows)("preserves genuine network and structured errors in $mode", async ({ mode }) => {
+  window.history.replaceState(null, "", `/workspace?workflow=${mode}`);
+  let calls = 0;
+  vi.stubGlobal("fetch", vi.fn((url: string) => {
+    if (url.endsWith("/api/v1/profile")) return Promise.resolve(profileResponse);
+    calls += 1;
+    if (calls === 1) return Promise.reject(new Error("Network failure"));
+    // An AbortError without our signal being aborted is not an intentional cancellation.
+    if (calls === 2) return Promise.reject(new DOMException("Unexpected failure", "AbortError"));
+    return Promise.resolve(new Response(JSON.stringify({ detail: "Synthetic API error" }), { status: 503 }));
+  }));
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/ask the example/i), { target: { value: "Synthetic question" } });
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Request failed");
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Request failed");
+  expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Request failed: Synthetic API error");
+  expect(screen.queryByRole("button", { name: "Cancel request" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Ask" })).toBeEnabled();
+});
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -148,7 +393,7 @@ it("translates provider mode and explains an empty source list", async () => {
   expect(screen.getByText("No matching source excerpts were found.")).toBeInTheDocument();
 });
 
-it("shows a structured API error and clears a stale answer while retrying", async () => {
+it("shows a structured API error and preserves the previous exchange while retrying", async () => {
   let rejectRequest: ((reason: Error) => void) | undefined;
   let chatCall = 0;
   const fetchMock = vi.fn().mockImplementation((url: string) => {
@@ -175,7 +420,8 @@ it("shows a structured API error and clears a stale answer while retrying", asyn
   await userEvent.clear(input);
   await userEvent.type(input, "Second");
   await userEvent.click(screen.getByRole("button", { name: "Ask" }));
-  expect(screen.queryByText("Old answer")).not.toBeInTheDocument();
+  expect(screen.getByText("Old answer")).toBeInTheDocument();
+  expect(screen.getByText("First", { selector: "summary" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Searching…" })).toBeDisabled();
 
   rejectRequest?.(new Error("network"));
@@ -258,11 +504,13 @@ it("applies the configured public profile and question limit", async () => {
 
   expect(await screen.findByText("Documentation Helper")).toBeInTheDocument();
   expect(screen.getByText("Answers from reviewed documentation.")).toBeInTheDocument();
-  expect(document.title).toContain("Documentation Helper");
-  expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
-    "content",
-    "Answers from reviewed documentation.",
-  );
+  await waitFor(() => {
+    expect(document.title).toContain("Documentation Helper");
+    expect(document.querySelector('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Answers from reviewed documentation.",
+    );
+  });
   expect(screen.getByLabelText(/ask the example/i)).toHaveAttribute("maxlength", "42");
   expect(screen.getByText(/0 \/ 42 characters/)).toBeInTheDocument();
 });
@@ -589,7 +837,7 @@ it("exports only the validated collaboration response and revokes its object URL
   const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
   vi.stubGlobal(
     "Blob",
-    vi.fn((parts: BlobPart[]) => {
+    vi.fn(function (parts: BlobPart[]) {
       blobParts = parts;
       return {};
     }),

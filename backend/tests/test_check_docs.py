@@ -219,3 +219,115 @@ def test_existing_file_owner_traversal_and_merge_marker_checks_remain(
         f"{source_name}: link leaves repository: ../../outside.md",
         f"{source_name}: unexpected GitHub owner in https://github.com/not-the-owner/agent-me",
     ]
+
+
+def test_repository_docs_do_not_walk_owner_workspace_or_browser_artifacts(tmp_path, monkeypatch):
+    (tmp_path / "docs").mkdir()
+    public = tmp_path / "docs" / "public.md"
+    public.write_text("# Public documentation\n", encoding="utf-8")
+    for name in ("private", "test-results", "playwright-report", "node_modules", ".hidden"):
+        folder = tmp_path / name
+        folder.mkdir()
+        (folder / "unrelated.md").write_text(
+            "[not repository documentation](missing.md)", encoding="utf-8"
+        )
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+    assert check_docs.markdown_files() == [public]
+
+
+def test_angle_delimited_destinations_keep_spaces_and_optional_titles(tmp_path, monkeypatch):
+    source = tmp_path / "source.md"
+    source.write_text(
+        '[self](<>)\n[space only]( )\n[install](<setup guide.md#install> "Guide")\n'
+        "[missing](<missing guide.md>)\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "setup guide.md").write_text("# Install\n", encoding="utf-8")
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+
+    assert check_docs.validate_file(source) == ["source.md: missing local link: missing guide.md"]
+
+
+def test_queries_do_not_change_the_local_target_path_or_heading(tmp_path, monkeypatch):
+    source = tmp_path / "source.md"
+    source.write_text(
+        "# Source\n"
+        "[same page](?plain=1#source)\n"
+        "[cross page](guide.md?plain=1#install)\n"
+        "[broken](missing.md?plain=1)\n"
+        "[bad section](guide.md?plain=1#absent)\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "guide.md").write_text("# Install\n", encoding="utf-8")
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+
+    assert check_docs.validate_file(source) == [
+        "source.md: missing local link: missing.md",
+        "source.md: missing Markdown anchor in guide.md: #absent",
+    ]
+
+
+def test_url_encoded_question_mark_remains_part_of_the_filename():
+    assert check_docs.destination_parts("why%3F.md?plain=1#intro") == ("why%3F.md", "intro")
+
+
+def test_invalid_backtick_fence_does_not_hide_links_or_headings(tmp_path, monkeypatch):
+    source = tmp_path / "source.md"
+    source.write_text("```invalid`info\n# Visible\n\n[broken](missing.md)\n", encoding="utf-8")
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+
+    assert check_docs.validate_file(source) == ["source.md: missing local link: missing.md"]
+    assert check_docs.heading_anchors(source.read_text(encoding="utf-8")) == {"visible"}
+
+
+def test_tilde_fence_can_have_backticks_in_its_info_string():
+    assert check_docs.heading_anchors("~~~some`info\n# Hidden\n~~~\n# Visible\n") == {"visible"}
+
+
+def test_setext_heading_is_not_a_merge_conflict(tmp_path, monkeypatch):
+    source = tmp_path / "source.md"
+    source.write_text("A valid title\n=============\n\n[back](#a-valid-title)\n", encoding="utf-8")
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+
+    assert check_docs.validate_file(source) == []
+
+
+def test_real_conflict_is_reported_even_with_a_setext_underline(tmp_path, monkeypatch):
+    source = tmp_path / "source.md"
+    source.write_text(
+        "A valid title\n=============\n\n<<<<<<< HEAD\nours\n=======\ntheirs\n>>>>>>> topic\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+
+    assert check_docs.validate_file(source) == [
+        "source.md: unresolved merge marker <<<<<<<",
+        "source.md: unresolved merge marker >>>>>>>",
+    ]
+
+
+def test_course_requires_visible_sections_and_accepts_subtitles(tmp_path, monkeypatch):
+    monkeypatch.setattr(check_docs, "ROOT", tmp_path)
+    monkeypatch.setattr(check_docs, "LESSONS", ("00-fixture",))
+    monkeypatch.setattr(check_docs, "ENGLISH_SECTIONS", ("## Exercises", "## Further reading"))
+    monkeypatch.setattr(check_docs, "CHINESE_SECTIONS", ("## 练习", "## 延伸阅读"))
+    english = tmp_path / "course" / "00-fixture" / "README.md"
+    chinese = tmp_path / "course" / "translations" / "zh-CN" / "00-fixture" / "README.md"
+    for path in (english, chinese):
+        path.parent.mkdir(parents=True)
+
+    english.write_text(
+        "## ExercisesArchive\n   ## Further reading: References ###\n\n"
+        "```md\n## Exercises\n**Time:** 10 minutes\n```\n",
+        encoding="utf-8",
+    )
+    chinese.write_text("**时间：** 10 分钟\n\n## 练习：示例\n##\t延伸阅读\n", encoding="utf-8")
+    assert check_docs.validate_course() == [
+        f"{english.relative_to(tmp_path)}: missing required section ## Exercises",
+        f"{english.relative_to(tmp_path)}: missing time metadata",
+    ]
+
+    english.write_text(
+        "**Time:** 10 minutes\n\n## Exercises\n## Further reading: References\n", encoding="utf-8"
+    )
+    assert check_docs.validate_course() == []

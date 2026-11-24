@@ -25,12 +25,26 @@ enforce the same input limit. The safe boolean `external_provider_enabled` lets 
 the question's data destination before submission. It never reveals the provider URL, model ID, or
 credentials.
 
+`max_history_chars` and `max_history_turn_chars` expose the total and per-message history budgets.
+The browser keeps recent complete exchanges within those limits and the 20-message cap.
+
 ## `POST /api/v1/chat`
 
 Request fields:
 
 - `question`: required nonblank string, capped by `MAX_QUESTION_CHARS`.
 - `history`: optional array of up to 20 `{role, content}` items. Roles are `user` or `assistant`; total content is capped by `MAX_HISTORY_CHARS`.
+- `previous_sources`: optional array of up to four `{path, excerpt}` locators copied from the
+  preceding response. Paths are 1–1024 characters and excerpts 1–4000 characters after trimming;
+  unknown fields are rejected. These are untrusted locations, not evidence supplied by the client.
+
+With a configured external provider, an empty current-question search can revisit these locations
+when history is present. The server reads only its current public Markdown corpus, locating the
+old excerpt and including adjacent paragraphs (at most 3000 characters per excerpt). Edited
+sources use current text; deleted or nonpublic paths are skipped. Existing context budgets still
+apply. There is one answer-model request and no query-rewrite request. Direct search hits take
+precedence; an irrelevant hit therefore does not trigger this fallback. See
+[follow-up retrieval](FOLLOWUP_RETRIEVAL.md) for the request flow and evaluation.
 
 Unknown fields, invalid roles, blank content, and oversized fields are rejected. Unsafe symbolic
 links, unreadable Markdown, a file larger than `MAX_DOCUMENT_BYTES`, more than
@@ -109,6 +123,19 @@ When retrieval finds no evidence, `grounded` is `false`, the critic outcome is `
 writer returns the fixed insufficient-evidence message with zero citations. In verified mode, the
 verifier records that this safe fallback satisfies the zero-citation invariant.
 
+## Cancel a single browser request
+
+While **Ask** is running in standard, baseline collaboration, or verified collaboration mode,
+**Cancel request** aborts that request's browser fetch and immediately restores the form. The
+button supports keyboard activation and returns focus to the question, which remains editable
+for a retry. A localized cancellation status replaces the generic request-failed alert; genuine
+network and API failures still use the normal error path. Leaving/unmounting the interface also
+aborts the active request, and late responses cannot overwrite a newer run.
+
+This is client-side cancellation only: it does not guarantee that backend work or an external
+provider has stopped, undo data already forwarded, or introduce a durable job-cancellation API.
+The separate **Compare workflows** action is unchanged and is not covered by this cancel button.
+
 ## Compare workflows in the browser
 
 **Compare workflows** is a separate action, not a fourth mode. It submits two requests to
@@ -178,3 +205,51 @@ Malformed request schemas, unknown fields, invalid roles, and blank strings cont
 ## Provider failures
 
 Partial provider configuration makes `/ready` return `503` instead of silently changing answer mode. Provider timeouts, rejected requests, rate limits, invalid JSON, invalid completion shapes, and oversized answers return classified `502`/`503` errors. Upstream bodies, URLs, and credentials are never copied into client errors.
+
+## Private memory lifecycle
+
+The opt-in private API is separate from public chat and collaboration. Its complete route table,
+version-8 export format, revision preconditions, deletion boundaries, and independent Agent core
+are documented in [Private AI Twin](PERSONAL.md#typed-memory-contract--结构化记忆契约).
+No public endpoint reads the private database.
+
+
+Entity binding, declared confidence, belief states, validity/knowledge time and owner-reviewed retention
+are documented in [Structured identity and time](IDENTITY_TIME.md).
+
+
+## Grounded personal Agent
+
+Authenticated `/api/v1/personal/ask`, `/retrieve`, `/verify`, and `/identity/owner` contracts are
+documented in [Personal retrieval](PERSONAL_RETRIEVAL.md). This local path emits exact atomic
+source values and performs live verification; it does not automatically certify legacy provider prose.
+Public chat/collaboration remain separate and never access this private workspace.
+
+## Owner-approved local agency
+
+Authenticated `/api/v1/personal/agent`, `/tools/permissions`, `/actions`, `/tasks` and
+`/notes` implement typed know/recommend/act routing and real local tools. Plan creation
+never executes; exact owner approval and live data/permission validation are mandatory.
+See [local agency contracts](AGENCY.md) for complete routes, retry and rollback semantics.
+
+## Owner learning controls
+
+Authenticated `/api/v1/personal/learning/policy` and `/consolidation` routes configure
+learning boundaries and explicitly reviewed exact cross-record consolidation. See
+[learning control contracts](LEARNING_CONTROL.md) for full methods and preservation semantics.
+
+## Portable owner control and audit
+
+Authenticated `/api/v1/personal/portability`, `/audit`, revision-bound output/action/source
+erasure and `/workspace/purge` contracts are documented in [owner control](OWNER_CONTROL.md).
+Import requires an empty destination and the exact reviewed digest; historical grants/plans
+are inert data. Audit does not store request content, tokens, private paths or exception text.
+
+## Optional private provider disclosure
+
+`/api/v1/personal/chat` is local/extractive unless both workspace authorization and explicit
+`allow_provider: true` apply. `/disclosure/target` and `/disclosure/policy` expose owner target
+review and data scopes. See [disclosure contracts](DISCLOSURE.md); atomic ask remains provider-free.
+See [long-term chat memory](CHAT_MEMORY.md#api-integration) for scoped chat fields, capture
+outcomes and exact owner-turn proposals. Explicit remember/correct commands are local even when
+provider opt-in is present.
